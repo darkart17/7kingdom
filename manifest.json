@@ -2,11 +2,25 @@
   "background_color": "#000000",
   "dir": "ltr",
   "display": "fullscreen",
-  "name": "darkart17.github",
+  "name": "세븐킹덤",
   "orientation": "portrait",
   "scope": "/",
-  "short_name": "darkart17.github",
+  "short_name": "세븐킹덤",
   "start_url": "/",
   "theme_color": "#000",
-  "lang": "ko"
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "android-launchericon-512-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "android-launchericon-192-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
