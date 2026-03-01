@@ -1,13 +1,12 @@
 {
-  "background_color": "#000000",
+  "background_color": "#ffffff",
   "dir": "ltr",
-  "display": "fullscreen",
-  "name": "세븐킹덤",
+  "display": "standalone",
+  "name": "darkart17.github",
   "orientation": "portrait",
   "scope": "/",
-  "short_name": "세븐킹덤",
+  "short_name": "darkart17.github",
   "start_url": "/",
   "theme_color": "#000",
-  "id": "7K",
   "lang": "ko"
 }
