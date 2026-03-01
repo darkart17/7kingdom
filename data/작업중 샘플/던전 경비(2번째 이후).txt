@@ -1,0 +1,23 @@
+export const goldDungeonRepeatIntro = [
+  {
+    "type": "bg",
+    "bg": "assets/images/dungeon/bg_gold_dungeon_ent.jpg",
+    "transition": "fade"
+  },
+  {
+    "type": "narration",
+    "text": "골드 던전의 입구. 나는 경비를 서고 있는 대장에게 길드 'STAY'의 출입 승인증을 가볍게 내보였다."
+  },
+  {
+    "type": "narration",
+    "text": "경비대장은 승인증을 가볍게 확인한 뒤, 말없이 길을 열어주며 짧은 묵례를 건넸다."
+  },
+  {
+    "type": "narration",
+    "text": "나는 익숙해진 황금빛 어둠 속으로 거침없이 진입했다."
+  },
+  {
+    "type": "system",
+    "text": "[ 시스템 : 골드 던전에 진입합니다. ]"
+  }
+];

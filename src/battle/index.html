@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <title>Puzzle RPG: Final Completed v56</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="transition-layer">
+        <div id="result-screen" class="hidden">
+            <div id="result-content-wrap">
+                <div id="ending-text"></div>
+                <div id="result-gold-earned" class="hidden"></div>
+                <div id="result-bubble"></div>
+                <div id="result-img-wrap">
+                    <img id="result-char-img" src="" alt="">
+                </div>
+            </div>
+            <div id="result-buttons-wrap">
+                <button id="retry-btn" onclick="returnToTitle()" style="display: none;">확인</button>
+                <button id="result-exit-btn" style="display: none;">나가기</button>
+            </div>
+        </div>
+        <div id="gameover-message" class="hidden">
+            <img id="gameover-img" src="assets/dead.png" alt="">
+            <div id="gameover-text">당신의 모험은 여기까지 입니다.</div>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="dungeon-intro-overlay" class="dungeon-intro-overlay hidden">
+            <div id="dungeon-intro-bg" class="dungeon-intro-bg"></div>
+            <div id="dungeon-intro-char-wrap" class="dungeon-intro-char-wrap">
+                <img id="dungeon-intro-char-img" class="dungeon-intro-char-img" src="" alt="" style="opacity:0;">
+                <img id="dungeon-intro-char-img-next" class="dungeon-intro-char-img dungeon-intro-char-img-next" src="" alt="" style="opacity:0;">
+            </div>
+            <div id="dungeon-intro-ui" class="dungeon-intro-ui">
+                <div id="dungeon-intro-name-tag" class="dungeon-intro-name-tag"></div>
+                <div id="dungeon-intro-text" class="dungeon-intro-text"></div>
+                <div id="dungeon-intro-next" class="dungeon-intro-next">▶▶</div>
+            </div>
+        </div>
+        <div id="red-flash"></div>
+        <div id="beam-h" class="cross-beam beam-h"></div>
+        <div id="beam-v" class="cross-beam beam-v"></div>
+
+        <div id="content-wrapper" class="title-hidden">
+            <div id="top-stats-stack">
+                <div id="game-stats">
+                    <div class="boss-name-area">
+                        <div class="stat-box" id="boss-name-box"><span id="boss-name"></span></div>
+                        <button id="battle-quit-btn" class="battle-quit-btn hidden">나가기</button>
+                    </div>
+                    <div id="turns-and-attack-wrap">
+                        <div class="stat-box info-box"><span id="stat-turns-label">TURNS:</span> <span id="stat-turns">0</span></div>
+                        <div id="attack-info-stack">
+                            <div id="turn-info" class="info-box"><span id="moves-left" style="color:#e74c3c; font-weight:bold;">3</span> 턴 후 <span id="turn-info-ability">공격</span></div>
+                            <div id="turn-info-extras"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="top-area">
+                <div id="boss-wrapper">
+                    <div class="boss-char-wrap">
+                        <div id="boss-damage-reflect-shield" class="boss-damage-reflect-shield hidden"></div>
+                        <div id="boss-absolute-defense-shield" class="boss-absolute-defense-shield hidden"></div>
+                        <img id="boss-img" src="" alt="Boss">
+                    </div>
+                </div>
+                <div class="bar-container-outer">
+                    <div class="bar-wrap">
+                        <div id="boss-hp-bar" class="bar-fill"></div>
+                        <span class="bar-text-center" id="boss-hp-text">200</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="grid-area">
+                <div id="target-guide">대상 선택!</div>
+                <div id="countdown-display">3</div>
+                <div id="grid-overlay"></div>
+                <div id="grid"></div>
+            </div>
+
+            <div id="bottom-area">
+                <div id="gold-dungeon-widget" class="gold-dungeon-widget hidden">
+                    <div class="gold-btn-wrap">
+                        <div class="gold-btn-circle"></div>
+                        <img class="gold-btn-icon" src="../../assets/images/main/coin.png" alt="골드">
+                        <span id="gold-count" class="gold-count">0</span>
+                    </div>
+                </div>
+                <div id="artifact-slot-widget" class="artifact-slot-widget hidden">
+                    <div class="artifact-slot-wrap">
+                        <div class="artifact-slot-circle"></div>
+                        <span class="artifact-slot-label">Artifact</span>
+                    </div>
+                </div>
+                <div id="bottom-center" style="width: 45%; text-align: center; display:flex; flex-direction:column-reverse; z-index: 20;">
+                    <div id="skill-bar-wrap" class="bar-wrap" style="height: 25px; border-color:#888;">
+                        <div id="skill-bar" class="bar-fill" style="width:0%;"></div>
+                        <span class="bar-text-center bar-text-skill" id="skill-bar-text">0/30</span>
+                    </div>
+                    <div class="bar-wrap">
+                        <div id="player-hp-bar" class="bar-fill"></div>
+                        <span class="bar-text-center" id="player-hp-text">30</span>
+                    </div>
+                    <div id="shield-display"><img id="shield-icon" src="assets/blocks/shield_1.png" alt="방패"><span id="shield-value">0</span></div>
+                </div>
+                
+                <div id="skill-btn" class="skill-btn-wrap">
+                    <div class="skill-btn-circle">
+                        <div class="skill-btn-fill" id="skill-btn-fill"></div>
+                    </div>
+                    <div class="skill-btn-icon"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="title-screen">
+            <img id="title-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Game Logo">
+            <div id="title-asmo-wrapper">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Title Character">
+            </div>
+            <div class="title-btn-group">
+                <button id="record-btn">🏆 RECORDS</button>
+                <button id="start-btn">GAME START</button>
+            </div>
+        </div>
+
+        <div id="record-modal" class="hidden">
+            <div class="record-box">
+                <div class="record-title">🏆 명예의 전당 (최저 턴 기록)</div>
+                <div id="rankList">기록을 불러오는 중...</div>
+                <button class="close-btn" onclick="toggleRecordModal(false)">CLOSE</button>
+            </div>
+        </div>
+    <div id="name-modal" class="overlay hidden" style="background: rgba(0,0,0,0.9); z-index: 500; justify-content: center; align-items: center;">
+            <div class="record-box">
+                <div class="record-title" style="font-size: 50px;">ENTER NAME</div>
+                <p style="color: #ccc; font-size: 24px; margin-bottom: 30px;">기록 등록을 위해 이름을 입력하세요.</p>
+                <input type="text" id="player-name-input" maxlength="10" placeholder="Hero Name" 
+                    style="font-size: 40px; padding: 15px; width: 80%; text-align: center; border-radius: 15px; border: none; margin-bottom: 30px;">
+                <button id="submit-name-btn" style="min-width: 300px; background: #27ae60;">SUBMIT</button>
+            </div>
+        </div>
+    </div>
+    <div id="quit-confirm-modal" class="quit-confirm-overlay hidden">
+            <div class="quit-confirm-box">
+                <div class="quit-confirm-text">던전을 포기하고 입구로 돌아갑니다.<br>얻은 골드는 사라집니다.</div>
+                <div class="quit-confirm-btns">
+                    <button id="quit-confirm-cancel" class="quit-confirm-btn cancel">취소</button>
+                    <button id="quit-confirm-ok" class="quit-confirm-btn ok">확인</button>
+                </div>
+            </div>
+        </div>
+        <script>document.body.addEventListener('touchstart',function(){},{passive:true});</script>
+        <script src="../../data/config/paths.js"></script>
+        <script src="stages.js"></script>
+        <script src="dungeonStages.js"></script>
+        <script src="game.js"></script>
+    </body>
+</html>

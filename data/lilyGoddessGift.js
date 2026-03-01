@@ -1,0 +1,26 @@
+export const lilyGoddessGiftData = {
+  id: "lily_goddess_gift",
+  name: "여신의 선물",
+  imagePath: "assets/images/memory/godness.png",
+  returnToChar: true,
+  ending: "",
+
+  events: [
+    { type: "episode", title: "- 여신의 선물 -\n\n기다림의 증표" },
+    { type: "bg", bg: "assets/images/memory/bg_3.jpg", transition: "fade" },
+    { type: "ui", action: "show" },
+    { type: "narration", text: "따스했던 기억의 여운이 흩어지고, 다시 별빛이 흐르는 무한한 성소로 돌아왔다." },
+    { type: "actor", action: "show", image: "assets/images/memory/godness.png", motion: "fade_in", pos: "center" },
+    { type: "dialogue", speaker: "별의 여신", text: "수고하셨습니다, 이방인이여.\n당신을 향한 첫 번째 '인연의 기억'이 무사히 밤하늘에 새겨졌습니다." },
+    { type: "dialogue", speaker: "별의 여신", text: "비록 화려한 귀족이나 강력한 마법사는 아니었지만...\n언제든 돌아올 수 있는 안식처가 되어주겠다는 릴리 님의 맹세는, 그 어떤 방패보다도 견고했습니다." },
+    { type: "narration", text: "여신이 부드럽게 손을 뻗자, 공간을 떠돌던 별빛들이 내 눈앞으로 모여들어 하나의 형태를 이루기 시작했다.\n그것은 릴리가 목숨처럼 아꼈던, 바로 그 낡은 펜던트였다.", spawnGoddessParticles: true, itemImage: "assets/images/memory/lily_item.png" },
+    { type: "dialogue", speaker: "별의 여신", text: "이것은 릴리 님의 마음이 현실로 구현된 인연의 증표,\n'할머니의 펜던트'입니다.", itemImage: "assets/images/memory/lily_item.png" },
+    { type: "dialogue", speaker: "별의 여신", text: "과거에는 그저 깨지기 쉬운 유리 조각에 불과했지요.\n하지만 지금은, 당신이 무사히 돌아오기를 바라는 그녀의 간절함이 깃든 신비한 아티팩트가 되었습니다.", itemImage: "assets/images/memory/lily_item.png" },
+    { type: "dialogue", speaker: "별의 여신", text: "이 증표를 품고 전장에 나서십시오.\n돌아갈 곳이 있다는 굳건한 믿음이, 위기의 순간 당신의 생명력을 끈질기게 붙잡아 줄 것입니다.", itemImage: "assets/images/memory/lily_item.png" },
+    { type: "narration", text: "[ 시스템 : 인연의 증표 '할머니의 펜던트'를 획득했습니다! ]\n\n◆ 패시브 스킬: <귀환의 약속>\n- 매 턴 일정량의 체력을 회복합니다.\n- 전투 중 치명적인 피해를 입을 시, 체력 1을 남기고 1회 생존합니다.", itemImage: "assets/images/memory/lily_item.png" },
+    { type: "narration", text: "손안에 쥔 펜던트에서 은은하고 따스한 온기가 느껴진다.\n마치 그녀가 곁에서 내 옷깃을 꼭 쥐고 있는 것처럼.", itemImage: "assets/images/memory/lily_item.png" },
+    { type: "dialogue", speaker: "별의 여신", text: "자, 멈춰선 운명의 수레바퀴를 돌리기 위해...\n다음 별빛이 당신의 손길을 기다리고 있습니다." },
+    { type: "actor", action: "hide" },
+    { type: "narration", text: "펜던트를 가슴에 품고, 나는 새롭게 빛나는 다음 기억의 문망울을 향해 발걸음을 옮겼다." },
+  ],
+};

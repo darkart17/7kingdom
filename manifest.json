@@ -1,0 +1,13 @@
+{
+  "background_color": "#000000",
+  "dir": "ltr",
+  "display": "fullscreen",
+  "name": "세븐킹덤",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "세븐킹덤",
+  "start_url": "/",
+  "theme_color": "#000",
+  "id": "7K",
+  "lang": "ko"
+}

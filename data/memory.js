@@ -1,0 +1,40 @@
+const MEMORY_BG = {
+  bg_1: "assets/images/memory/bg_1.jpg",
+  bg_2: "assets/images/memory/bg_2.jpg",
+  bg_3: "assets/images/memory/bg_3.jpg",
+};
+
+export const memoryData = {
+  id: "memory",
+  name: "인연의 기억",
+  imagePath: "assets/images/memory/godness.png",
+  memoryReturnToCharList: true,
+  ending: "",
+
+  events: [
+    { type: "episode", title: "- 프롤로그 -\n\n인연의 기억" },
+    { type: "bg", bg: MEMORY_BG.bg_1, transition: "fade" },
+    { type: "ui", action: "show" },
+    { type: "narration", text: "눈을 뜨자, 끝을 알 수 없는 짙은 밤하늘이 펼쳐져 있었다.\n발밑으로는 은하수가 흐르고, 따스하고 희미한 빛무리들이 내 곁을 맴돈다." },
+    { type: "narration", text: "기억이 나지 않는다.\n내가 누구인지, 왜 이런 무한한 공간에 홀로 서 있는지." },
+    { type: "dialogue", speaker: "???", text: "깨어나셨군요, 먼 곳에서 온 이방인이여." },
+    { type: "narration", text: "어디선가 부드럽고도 슬픈 목소리가 들려왔다.\n빛무리들이 하나로 모이더니, 눈부시게 아름다운 여신의 형상을 띠었다." },
+    { type: "ui", action: "hide" },
+    { type: "actor", action: "show", image: "godness" },
+    { type: "ui", action: "show" },
+    { type: "dialogue", speaker: "별의 여신", text: "저는 아스테리아를 굽어살피는 미지의 의지를 대변하는 자.\n당신을 이 성소로 인도한 '별의 여신'입니다." },
+    { type: "narration", text: "'아스테리아'...\n처음 듣는 이름임에도, 가슴 깊은 곳에서 알 수 없는 통증과 그리움이 스치고 지나갔다." },
+    { type: "dialogue", speaker: "별의 여신", text: "기억하지 못하셔도 괜찮습니다.\n당신이 아주 깊은 잠에 빠져있는 동안, 바깥세상의 하늘은 파멸의 불꽃으로 붉게 물들고 말았으니까요." },
+    { type: "dialogue", speaker: "별의 여신", text: "세상을 집어삼키려는 어둠을 걷어내기 위해선, 잃어버린 당신의 '진짜 힘'이 필요합니다." },
+    { type: "narration", text: "여신이 손을 뻗자, 공간을 떠돌던 수많은 별빛이 내 눈앞에 여러 개의 문망울을 만들어냈다.\n문망울 너머로 누군가의 웃음소리, 온기, 그리고 눈물이 희미하게 스쳐 지나간다." },
+    { type: "dialogue", speaker: "별의 여신", text: "이곳은 '인연의 기억'.\n당신이 과거에 누군가와 나누었던 소중한 마음들이 별빛이 되어 머무는 곳입니다." },
+    { type: "dialogue", speaker: "별의 여신", text: "저 기억의 파편 속으로 들어가, 그녀들과의 인연을 다시 한번 체험하세요.\n그리고 그 끝에서 빛나고 있는 '인연의 증표'를 찾아내야만 합니다." },
+    { type: "narration", text: "여신의 눈동자에 아련한 슬픔이 어린다.\n그녀는 마치, 내가 마주하게 될 가혹한 진실을 이미 알고 있는 듯했다." },
+    { type: "dialogue", speaker: "별의 여신", text: "흩어진 인연의 증표가 모두 모이는 날...\n당신은 마침내 모든 진실을 마주하고, 멈춰버린 운명의 수레바퀴를 다시 돌릴 수 있게 될 것입니다." },
+    { type: "narration", text: "가장 가까이 있던 별빛 하나가 나를 부르듯 따스하게 명멸한다." },
+    { type: "bg", bg: MEMORY_BG.bg_3, transition: "fade" },
+    { type: "dialogue", speaker: "별의 여신", text: "자, 첫 번째 기억이 당신을 기다리고 있습니다.\n부디... 잃어버린 당신의 세계를 되찾아 주시길." },
+    { type: "narration", text: "나는 알 수 없는 이끌림에 몸을 맡긴 채, 빛나는 기억의 문망울 속으로 발걸음을 내디뎠다." },
+    { type: "narration", text: "[ 시나리오 모드 : '인연의 기억' 이 개방되었습니다. ]" },
+  ],
+};

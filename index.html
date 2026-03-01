@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <!-- 게임 디자인 기준: 1080×1920 (세로). 컨테이너가 scale로 맞춤 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+    <title>미니 연애 시뮬레이션</title>
+        <link rel="stylesheet" href="./style.css">
+        <!-- paths.js 먼저 로드: DEBUG=false 시 콘솔 출력 비활성화 -->
+        <script src="./data/config/paths.js"></script>
+        <!-- 배틀 스테이지 설정 공유 (보스 이름 등)
+             시나리오(index.html) 기준 src/battle 의 stages.js 를 불러옵니다. -->
+        <script src="./src/battle/stages.js"></script>
+        <script src="./src/battle/dungeonStages.js"></script>
+        <script src="./data/gameStorage.js"></script>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="bg-layer"></div>
+    <div id="episode-layer"><div id="episode-title"></div></div>
+
+    <!-- 타이틀 화면 (터치 시 모드 셀렉트로) -->
+    <div id="title-screen">
+        <div id="title-screen-bg" class="title-screen-bg"></div>
+        <div class="title-screen-logo-wrap">
+            <img id="title-screen-logo" class="title-screen-logo" src="assets/images/main/logo.png" alt="Logo">
+            <div class="title-screen-logo-shimmer"></div>
+        </div>
+        <div class="title-screen-text">터치해서 시작하세요</div>
+    </div>
+
+    <!-- 최상위: 메인 메뉴 (이벤트 / 던전 / 상점) -->
+    <div id="main-menu-screen" class="screen-hidden">
+        <div class="main-menu-bg" id="main-menu-bg"></div>
+        <div class="main-menu-title-img-wrap">
+            <img src="assets/images/main/beridian.png" alt="Beridian" class="main-menu-title-img">
+        </div>
+        <div class="main-menu-title">MODE SELECT</div>
+        <div class="main-menu-list" id="main-menu-list"></div>
+        <div class="main-menu-vault-area">
+            <div class="main-menu-vault-line">
+                <img src="assets/images/main/main_line.png" alt="" class="main-menu-vault-line-img">
+            </div>
+            <div id="vault-bar" class="vault-bar"></div>
+        </div>
+    </div>
+
+    <div id="menu-screen" class="screen-hidden">
+        <div id="char-select-bg" class="char-select-bg"></div>
+        <div class="shop-header">
+            <button class="episode-back-btn" id="menu-back-btn">나가기</button>
+            <div class="shop-title">인연의 기억</div>
+        </div>
+        <div class="char-list" id="char-list-container"></div>
+        <div class="vault-area">
+            <div class="vault-line">
+                <img src="assets/images/main/main_line.png" alt="" class="vault-line-img">
+            </div>
+            <div id="vault-bar-char-select" class="vault-bar"></div>
+        </div>
+    </div>
+
+    <div id="episode-select-screen" class="screen-hidden">
+        <div class="shop-header">
+            <button class="episode-back-btn" id="episode-back-btn">나가기</button>
+            <div class="shop-title" id="episode-select-title">EPISODE SELECT</div>
+        </div>
+        <div class="episode-list" id="episode-list-container"></div>
+        <div id="goddess-gift-area"></div>
+        <div id="special-episode-area"></div>
+        <div id="special-episode-overlay" class="special-episode-overlay hidden">
+            <div class="special-episode-char-area">
+                <div class="special-episode-floating">
+                    <div class="special-episode-char-wrap">
+                        <div class="special-episode-img-wrap">
+                            <div class="special-episode-bubble">
+                                <div id="special-episode-lines"></div>
+                            </div>
+                            <img id="special-episode-img" src="" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 던전 선택 화면 -->
+    <div id="dungeon-select-screen" class="screen-hidden">
+        <div id="dungeon-select-bg" class="dungeon-select-bg"></div>
+        <div class="shop-header">
+            <button class="episode-back-btn" id="dungeon-back-btn">나가기</button>
+            <div class="shop-title">골드 던전</div>
+            <button class="episode-back-btn dungeon-intro-btn" id="dungeon-intro-btn">인트로</button>
+        </div>
+        <div class="episode-list" id="dungeon-list-container"></div>
+        <div class="vault-area">
+            <div class="vault-line">
+                <img src="assets/images/main/main_line.png" alt="" class="vault-line-img">
+            </div>
+            <div id="vault-bar-dungeon" class="vault-bar"></div>
+        </div>
+    </div>
+
+    <!-- 상점 화면 -->
+    <div id="shop-screen" class="screen-hidden">
+        <div class="shop-bg" id="shop-bg"></div>
+        <div class="shop-char-area">
+            <div class="shop-bubble" id="shop-bubble">어서 오세요~</div>
+            <div class="shop-char-float">
+                <div class="shop-char-img-wrap">
+                    <img id="shop-char-img" class="shop-char-img" src="assets/images/mio/mio_02.png" alt="" draggable="false">
+                    <img id="shop-char-img-next" class="shop-char-img shop-char-img-next" src="" alt="" style="opacity:0;" draggable="false">
+                </div>
+            </div>
+            <div id="shop-particle-layer"></div>
+        </div>
+        <div class="shop-header">
+            <button class="episode-back-btn" id="shop-back-btn">나가기</button>
+            <div class="shop-title">업그레이드 상점</div>
+            <button class="episode-back-btn shop-intro-btn" id="shop-intro-btn">인트로</button>
+        </div>
+        <div class="shop-main"></div>
+        <div class="shop-products" id="shop-products"></div>
+        <div class="vault-area">
+            <div class="vault-line">
+                <img src="assets/images/main/main_line.png" alt="" class="vault-line-img">
+            </div>
+            <div id="vault-bar-shop" class="vault-bar"></div>
+        </div>
+    </div>
+
+    <!-- 비밀 상점 (골드 상점) -->
+    <div id="gold-shop-screen" class="screen-hidden">
+        <div class="shop-bg" id="gold-shop-bg"></div>
+        <div class="shop-char-area">
+            <div class="shop-bubble" id="gold-shop-bubble">어서 오세요~</div>
+            <div class="shop-char-float">
+                <div class="shop-char-img-wrap">
+                    <img id="gold-shop-char-img" class="shop-char-img" src="assets/images/maya/maya_01.png" alt="" draggable="false">
+                    <img id="gold-shop-char-img-next" class="shop-char-img shop-char-img-next" src="" alt="" style="opacity:0;" draggable="false">
+                </div>
+            </div>
+            <div id="gold-shop-particle-layer"></div>
+        </div>
+        <div class="shop-header">
+            <button class="episode-back-btn" id="gold-shop-back-btn">나가기</button>
+            <div class="shop-title" id="gold-shop-title">비밀 상점</div>
+            <button class="episode-back-btn gold-shop-intro-btn" id="gold-shop-intro-btn">인트로</button>
+        </div>
+        <div class="shop-main"></div>
+        <div class="shop-products" id="gold-shop-products"></div>
+        <div class="vault-area">
+            <div class="vault-line">
+                <img src="assets/images/main/main_line.png" alt="" class="vault-line-img">
+            </div>
+            <div id="vault-bar-gold-shop" class="vault-bar"></div>
+        </div>
+    </div>
+
+    <!-- 길드 화면 (상점 구조, 보스 의뢰 리스트) -->
+    <div id="guild-screen" class="screen-hidden">
+        <div class="shop-bg" id="guild-bg"></div>
+        <div class="shop-char-area">
+            <div class="shop-bubble" id="guild-bubble">어서 오세요.</div>
+            <div class="shop-char-float">
+                <div class="shop-char-img-wrap">
+                    <img id="guild-char-img" class="shop-char-img" src="assets/images/seria/seria_01.png" alt="" draggable="false">
+                    <img id="guild-char-img-next" class="shop-char-img shop-char-img-next" src="" alt="" style="opacity:0;" draggable="false">
+                </div>
+            </div>
+            <div id="guild-particle-layer"></div>
+        </div>
+        <div class="shop-header">
+            <button class="episode-back-btn" id="guild-back-btn">나가기</button>
+            <div class="shop-title">길드</div>
+            <button class="episode-back-btn guild-intro-btn" id="guild-intro-btn">인트로</button>
+        </div>
+        <div class="guild-boss-panel">
+            <div class="guild-boss-panel-title">골드던전 토벌 의뢰</div>
+            <div class="guild-boss-list-wrap">
+                <div class="guild-boss-list" id="guild-boss-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 길드 보스 상세 (빈 페이지) -->
+    <div id="guild-boss-detail-screen" class="screen-hidden">
+        <div class="shop-bg guild-boss-detail-bg"></div>
+        <div class="shop-header">
+            <button class="episode-back-btn" id="guild-boss-detail-back-btn">나가기</button>
+            <div class="shop-title" id="guild-boss-detail-title">골드 던전 몬스터 보고서</div>
+        </div>
+        <div class="guild-boss-detail-content" id="guild-boss-detail-content"></div>
+    </div>
+    
+    <div class="top-ui">
+        <button id="back-btn" onclick="gameEngine.returnToMenu()">나가기</button>
+        <button id="touch-mode-btn" onclick="gameEngine.toggleTouchMode()">터치하기</button>
+    </div>
+
+    <div id="character-layer" onmousedown="gameEngine.handleTouchInteraction(event)" ontouchstart="gameEngine.handleTouchInteraction(event)">
+        <div id="memory-goddess-particles"></div>
+        <div id="gold-dungeon-guards" class="gold-dungeon-guards hidden">
+            <img id="guard-left" class="guard-img guard-left" src="" alt="">
+            <img id="guard-right" class="guard-img guard-right" src="" alt="">
+        </div>
+        <div id="scene-item-image" class="scene-item-image hidden"><img src="" alt=""></div>
+        <div id="talk-bubble">♥</div>
+        <div id="floating-wrapper">
+            <img id="character-image" src="" alt="" style="opacity: 0;">
+            <img id="character-image-next" src="" alt="" style="opacity: 0;">
+        </div>
+    </div>
+
+    <div id="ui-layer" class="ui-hidden" onclick="gameEngine.next()">
+        <div id="name-tag"></div>
+        <div id="dialogue-text"></div>
+        <div id="dialogue-next-indicator" class="hidden">▶▶</div>
+    </div>
+
+    <div id="white-out"></div>
+    <div id="ending-overlay" class="hidden">
+        <div id="ending-text-display"></div>
+    </div>
+    <div id="game-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modal-title"></div>
+            <div id="modal-body"></div>
+            <button id="modal-btn" class="modal-btn modal-btn--single modal-btn--primary">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 배틀 전용 오버레이 (퍼즐 RPG를 iframe으로 띄움)
+     NOTE: `#game-container`는 transform(scale)을 사용하므로, 오버레이를 그 안에 두면
+     fixed 포지션이 "전체 화면"이 아니라 "스케일된 컨테이너" 기준으로 동작할 수 있어
+     반드시 body 직속으로 둡니다. -->
+<div id="battle-overlay" style="display: none;">
+    <iframe id="battle-frame" src="about:blank" frameborder="0"></iframe>
+    <div id="quit-confirm-modal" class="quit-confirm-overlay hidden">
+        <div class="quit-confirm-box">
+            <div class="quit-confirm-text">던전을 포기하고 입구로 돌아갑니다.<br>얻은 골드는 사라집니다.</div>
+            <div class="quit-confirm-btns">
+                <button id="quit-confirm-cancel" class="quit-confirm-btn cancel">취소</button>
+                <button id="quit-confirm-ok" class="quit-confirm-btn ok">확인</button>
+</div>
+        </div>
+    </div>
+</div>
+<!-- 포기하기 등 메뉴 복귀 시 페이드 아웃 -->
+<div id="fade-out-overlay"></div>
+
+<script type="module">
+    document.body.addEventListener('touchstart', () => {}, { passive: true });
+    document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+
+    import { characterList } from './data/characters.js';
+    import { memoryData } from './data/memory.js';
+    import { lilyData } from './data/lily.js';
+    import { lilyGoddessGiftData } from './data/lilyGoddessGift.js';
+    import { goldDungeonFirstIntro, goldDungeonNoGuildIntro } from './data/goldDungeonIntro.js';
+    import { shopIntroData } from './data/shopIntro.js';
+    import { goldShopIntroData } from './data/goldShopIntro.js';
+    import { guildIntroData } from './data/guildIntro.js';
+    import { GUILD_CONFIG } from './data/guildConfig.js';
+    import { GUILD_BOSS_REPORTS } from './data/guildBossReports.js';
+    import { GameEngine } from './engine.js';
+    import { shopItems, SHOP_CONFIG, goldShopItems, GOLD_SHOP_CONFIG } from './data/shop.js';
+
+    // 블록 아이콘: 배틀 전용 에셋과 동일 경로 사용 (src/battle/assets/blocks/)
+    const BLOCK_IMG_BASE = 'src/battle/assets/blocks/';
+    const VAULT_BLOCKS = [
+        { id: 'SWORD', imgPrefix: 'sword' },
+        { id: 'POTION', imgPrefix: 'potion' },
+        { id: 'SHIELD', imgPrefix: 'shield' },
+        { id: 'MAGIC', imgPrefix: 'magic' },
+    ];
+
+    function addGoldDirect(amount) {
+        try {
+            const KEY = '3x3_vault';
+            const s = localStorage.getItem(KEY);
+            const parsed = s ? JSON.parse(s) : {};
+            parsed.goldEarned = (Number(parsed.goldEarned) || 0) + (Number(amount) || 0);
+            parsed.goldUsed = Number(parsed.goldUsed) || 0;
+            parsed.blockLevels = parsed.blockLevels || { SWORD: 1, POTION: 1, SHIELD: 1, MAGIC: 1 };
+            parsed.playerMaxHp = Math.max(5, Number(parsed.playerMaxHp) || 10);
+            parsed.heartPurchaseCount = Number(parsed.heartPurchaseCount) || 0;
+            localStorage.setItem(KEY, JSON.stringify(parsed));
+        } catch (e) {}
+    }
+    window.addGoldDirect = addGoldDirect;
+    function getVaultState() {
+        try {
+            const KEY = '3x3_vault';
+            const s = localStorage.getItem(KEY);
+            if (!s) return { goldEarned: 0, goldUsed: 0, blockLevels: { SWORD: 1, POTION: 1, SHIELD: 1, MAGIC: 1 }, playerMaxHp: 10, heartPurchaseCount: 0 };
+            const p = JSON.parse(s);
+            return {
+                goldEarned: Number(p.goldEarned) || 0,
+                goldUsed: Number(p.goldUsed) || 0,
+                blockLevels: p.blockLevels || { SWORD: 1, POTION: 1, SHIELD: 1, MAGIC: 1 },
+                playerMaxHp: Math.max(5, Number(p.playerMaxHp) || 10),
+                heartPurchaseCount: Number(p.heartPurchaseCount) || 0
+            };
+        } catch (e) { return { goldEarned: 0, goldUsed: 0, blockLevels: { SWORD: 1, POTION: 1, SHIELD: 1, MAGIC: 1 }, playerMaxHp: 10, heartPurchaseCount: 0 }; }
+    }
+    function updateVaultBar() {
+        try {
+            const items = (window.SHOP_ITEMS || shopItems || VAULT_BLOCKS).filter((it) => it.id !== 'HEART');
+            const state = (window.gameStorage && window.gameStorage.getState()) || getVaultState();
+            const gold = Math.max(0, (state.goldEarned || 0) - (state.goldUsed || 0));
+            const hp = Math.max(5, state.playerMaxHp || 10);
+            const heartItem = `<div class="vault-item"><span class="vault-item-icon">❤️</span><span class="vault-item-val">${hp}</span></div>`;
+            const goldItem = `<div class="vault-item"><img class="vault-item-icon" src="assets/images/main/coin.png" alt="골드"><span class="vault-item-val">${gold}</span></div>`;
+            const blocksHtml = items.map((it) => {
+                const lv = (state.blockLevels && state.blockLevels[it.id]) ?? 1;
+                const prefix = it.imgPrefix || it.id.toLowerCase();
+                const imgSrc = BLOCK_IMG_BASE + prefix + '_' + Math.min(5, Math.max(1, lv)) + '.png';
+                return `<div class="vault-item"><img class="vault-item-icon" src="${imgSrc}" alt="${it.id}"><span class="vault-item-val">Lv.${lv}</span></div>`;
+            }).join('');
+            const html = heartItem + blocksHtml + goldItem;
+            document.querySelectorAll('.vault-bar').forEach((el) => { el.innerHTML = html; });
+        } catch (e) { console.warn('updateVaultBar:', e); }
+    }
+
+    /* 메인 메뉴 모드 버튼 (맵 위 이미지 버튼 배치) */
+    const MAIN_MENU_CONFIG = { bg: 'assets/images/main/bg_main.jpg' };
+    window.CHAR_SELECT_CONFIG = { bg: 'assets/images/char_select/bg.jpg' };
+    const MAIN_MENU_MODES = [
+        { id: 'event', label: '이벤트', image: 'assets/images/main/bt_event.png', pos: { top: 'calc(18% + 150px)', left: 'calc(50% + 50px)', transform: 'translate(-50%, -50%)' } },
+        { id: 'goldShop', label: '비밀상점', image: 'assets/images/main/bt_goldshop.png', pos: { top: 'calc(38% + 100px)', left: '22%', transform: 'translate(-50%, -50%)' } },
+        { id: 'shop', label: '상점', image: 'assets/images/main/bt_shop.png', pos: { top: '62%', left: 'calc(42% + 50px)', transform: 'translate(-50%, -50%)' } },
+        { id: 'dungeon', label: '던전', image: 'assets/images/main/bt_dungeon.png', pos: { top: 'calc(42% + 0px)', left: '78%', transform: 'translate(-50%, -50%)' } },
+        { id: 'guild', label: '길드', image: 'assets/images/main/bt_guild.png', pos: { top: 'calc(100% - 700px)', left: 'calc(100% - 200px)', transform: 'translate(-50%, -50%)' } },
+        { id: 'record', label: '기록', image: 'assets/images/main/bt_book.png', pos: { top: 'calc(100% - 500px)', left: '150px', transform: 'translate(-50%, -50%)' } },
+    ];
+
+    /* 스페셜 에피소드 (베타용 - 제거 시 이 블록 전체 삭제) */
+    const SPECIAL_EPISODE_CONFIG = {
+        enabled: true,
+        charId: 'lily',
+        image: 'assets/images/lily/lily_14.png',
+        lines: ['♥성인모드♥ 구매시 이용가능합니다.'],
+    };
+
+    const mainMenuScreen = document.getElementById('main-menu-screen');
+    const mainMenuList = document.getElementById('main-menu-list');
+    const listContainer = document.getElementById('char-list-container');
+    const menuScreen = document.getElementById('menu-screen');
+    const episodeSelectScreen = document.getElementById('episode-select-screen');
+    const episodeListContainer = document.getElementById('episode-list-container');
+    const episodeSelectTitle = document.getElementById('episode-select-title');
+    const episodeBackBtn = document.getElementById('episode-back-btn');
+    const dungeonSelectScreen = document.getElementById('dungeon-select-screen');
+    const dungeonListContainer = document.getElementById('dungeon-list-container');
+    const shopScreen = document.getElementById('shop-screen');
+    const goldShopScreen = document.getElementById('gold-shop-screen');
+    const guildScreen = document.getElementById('guild-screen');
+    const guildBossDetailScreen = document.getElementById('guild-boss-detail-screen');
+    const guildBossListWrap = document.querySelector('.guild-boss-list-wrap');
+    const shopListContainer = document.getElementById('shop-list-container');
+
+    function hideAllScreens() {
+        mainMenuScreen.classList.add('screen-hidden');
+        menuScreen.classList.add('screen-hidden');
+        episodeSelectScreen.classList.add('screen-hidden');
+        dungeonSelectScreen.classList.add('screen-hidden');
+        shopScreen.classList.add('screen-hidden');
+        goldShopScreen.classList.add('screen-hidden');
+        guildScreen.classList.add('screen-hidden');
+        guildBossDetailScreen.classList.add('screen-hidden');
+        // 상위에서 한 번만: 메뉴/상점/길드 등 어떤 화면으로 가도 시나리오 레이어 숨김 → 터치 정상
+        const gc = document.getElementById('game-container');
+        if (gc) gc.classList.add('menu-visible');
+    }
+
+    const FADE_DUR = 350;
+    function fadeOutThen(el, onDone) {
+        if (!el || el.classList.contains('screen-hidden')) { if (onDone) onDone(); return; }
+        if (el === menuScreen || el === episodeSelectScreen || el === dungeonSelectScreen || el === shopScreen || el === goldShopScreen || el === guildScreen || el === guildBossDetailScreen) {
+            clearMemoryGoddessParticles();
+        }
+        el.classList.add('screen-fade-out');
+        el.style.pointerEvents = 'none';
+        setTimeout(() => {
+            el.classList.remove('screen-fade-out');
+            el.style.pointerEvents = '';
+            if (onDone) onDone();
+        }, FADE_DUR);
+    }
+    function fadeInScreen(el) {
+        if (!el) return;
+        el.classList.remove('screen-fade-out');
+        el.style.opacity = '0';
+        el.offsetHeight; // reflow
+        el.style.opacity = '';
+    }
+
+    const showMainMenu = window.showMainMenu = function showMainMenu(fromTitle) {
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        hideDialogueForEpisodeSelect();
+        const fromMenu = !menuScreen.classList.contains('screen-hidden');
+        const fromDungeon = !dungeonSelectScreen.classList.contains('screen-hidden');
+        const leaving = fromMenu ? menuScreen : fromDungeon ? dungeonSelectScreen : null;
+        const applyMainMenu = () => {
+            hideAllScreens();
+            mainMenuScreen.classList.remove('screen-hidden', 'screen-fade-out');
+            mainMenuScreen.style.display = 'flex';
+            const bgEl = document.getElementById('main-menu-bg');
+            const cfg = window.MAIN_MENU_CONFIG || { bg: 'assets/images/main/bg_main.jpg' };
+            if (bgEl && cfg.bg) bgEl.style.backgroundImage = `url('${cfg.bg}')`;
+            updateVaultBar();
+            updateGuildBubble();
+            if (fromTitle && mainMenuList) {
+                mainMenuList.style.pointerEvents = 'none';
+                setTimeout(() => { mainMenuList.style.pointerEvents = ''; }, 1500);
+            }
+        };
+        if (leaving) {
+            fadeOutThen(leaving, () => {
+                applyMainMenu();
+            });
+        } else {
+            clearMemoryGoddessParticles();
+            applyMainMenu();
+        }
+    };
+
+    const MEMORY_INTRO_SEEN_KEY = 'memory_intro_seen';
+    function hasSeenMemoryIntro() {
+        try { return !!localStorage.getItem(MEMORY_INTRO_SEEN_KEY); } catch (e) { return false; }
+    }
+    function setMemoryIntroSeen() {
+        try { localStorage.setItem(MEMORY_INTRO_SEEN_KEY, '1'); } catch (e) {}
+    }
+
+    function showCharacterSelectFromMemory() {
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        setMemoryIntroSeen();
+        clearMemoryGoddessParticles();
+        hideDialogueForEpisodeSelect();
+        hideAllScreens();
+        menuScreen.classList.remove('screen-hidden', 'screen-fade-out');
+        menuScreen.style.display = 'flex';
+        buildCharList();
+        if (listContainer) listContainer.scrollTop = 0;
+        updateVaultBar();
+        fadeInScreen(menuScreen);
+    }
+
+    function spawnMemoryGoddessParticles() {
+        const container = document.getElementById('memory-goddess-particles');
+        if (!container) return;
+        container.innerHTML = '';
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        const offset = isMobile ? 55 : 30;
+        const base = isMobile ? 70 : 50;
+        const edges = [
+            () => ({ x: -base - Math.random() * offset, y: (Math.random() - 0.5) * (isMobile ? 100 : 80) }),
+            () => ({ x: base + Math.random() * offset, y: (Math.random() - 0.5) * (isMobile ? 100 : 80) }),
+            () => ({ x: (Math.random() - 0.5) * (isMobile ? 100 : 80), y: -base - Math.random() * offset }),
+            () => ({ x: (Math.random() - 0.5) * (isMobile ? 100 : 80), y: base + Math.random() * offset }),
+        ];
+        for (let i = 0; i < 18; i++) {
+            const p = document.createElement('div');
+            p.className = 'goddess-glow-particle';
+            const e = edges[i % 4]();
+            const endX = (Math.random() - 0.5) * 20;
+            const endY = (Math.random() - 0.5) * 20;
+            const scale = 0.2 + Math.random() * 1.3;
+            const delay = Math.random() * 4;
+            const size = 40 + Math.random() * 120;
+            p.style.cssText = `width:${size}px;height:${size}px;margin-left:-${size/2}px;margin-top:-${size/2}px;--start-x:${e.x}vw;--start-y:${e.y}vh;--end-x:${endX}vw;--end-y:${endY}vh;--scale:${scale};animation-delay:${delay}s`;
+            container.appendChild(p);
+        }
+    }
+    function clearMemoryGoddessParticles() {
+        const container = document.getElementById('memory-goddess-particles');
+        if (container) container.innerHTML = '';
+    }
+
+    function startMemoryIntro() {
+        clearMemoryGoddessParticles();
+        hideAllScreens();
+        const ui = document.getElementById('ui-layer');
+        if (ui) {
+            ui.style.transition = 'none';
+            ui.classList.add('ui-hidden');
+            ui.classList.remove('ui-shown', 'hidden');
+            ui.style.display = 'block';
+        }
+                document.getElementById('back-btn').style.display = 'block';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        requestAnimationFrame(() => {
+            if (ui) ui.style.transition = '';
+            window.gameEngine.init(memoryData, 0);
+        });
+    }
+
+    function showCharacterSelect() {
+        hideDialogueForEpisodeSelect();
+        buildCharList();
+        if (listContainer) listContainer.scrollTop = 0;
+        const cfg = window.CHAR_SELECT_CONFIG || { bg: 'assets/images/char_select/bg.jpg' };
+        const bgEl = document.getElementById('char-select-bg');
+        if (bgEl && cfg.bg) bgEl.style.backgroundImage = `url('${resolveAssetUrl(cfg.bg)}')`;
+        updateVaultBar();
+        const fromMain = !mainMenuScreen.classList.contains('screen-hidden');
+        if (fromMain && !hasSeenMemoryIntro()) {
+            mainMenuScreen.classList.add('screen-fade-out');
+            mainMenuScreen.style.pointerEvents = 'none';
+            setTimeout(() => {
+                hideAllScreens();
+                mainMenuScreen.classList.remove('screen-fade-out');
+                mainMenuScreen.style.pointerEvents = '';
+                startMemoryIntro();
+            }, FADE_DUR);
+            return;
+        }
+        if (fromMain) {
+            clearMemoryGoddessParticles();
+            mainMenuScreen.classList.add('screen-fade-out');
+            mainMenuScreen.style.pointerEvents = 'none';
+            setTimeout(() => {
+                hideAllScreens();
+                mainMenuScreen.classList.remove('screen-fade-out');
+                mainMenuScreen.style.pointerEvents = '';
+                menuScreen.classList.remove('screen-hidden', 'screen-fade-out');
+                menuScreen.style.display = 'flex';
+                if (listContainer) listContainer.scrollTop = 0;
+                menuScreen.style.opacity = '0';
+                menuScreen.offsetHeight;
+                menuScreen.style.opacity = '';
+            }, FADE_DUR);
+        } else {
+            clearMemoryGoddessParticles();
+            hideAllScreens();
+            menuScreen.classList.remove('screen-hidden', 'screen-fade-out');
+            menuScreen.style.display = 'flex';
+            fadeInScreen(menuScreen);
+        }
+    }
+
+    const GOLD_DUNGEON_INTRO_SEEN = 'goldDungeonIntroSeen';
+    function hasSeenGoldDungeonIntro() {
+        try { return !!localStorage.getItem(GOLD_DUNGEON_INTRO_SEEN); } catch { return false; }
+    }
+    function markGoldDungeonIntroSeen() {
+        try { localStorage.setItem(GOLD_DUNGEON_INTRO_SEEN, '1'); } catch (e) {}
+    }
+
+    function startGoldDungeonIntro() {
+        clearMemoryGoddessParticles();
+        hideAllScreens();
+        const ui = document.getElementById('ui-layer');
+        if (ui) {
+            ui.style.transition = 'none';
+            ui.classList.add('ui-hidden');
+            ui.classList.remove('ui-shown', 'hidden');
+            ui.style.display = 'block';
+        }
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        requestAnimationFrame(() => {
+            if (ui) ui.style.transition = '';
+            window.gameEngine.init(goldDungeonFirstIntro, 0);
+        });
+    }
+
+    window.showDungeonList = function showDungeonList() {
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        const cfg = window.DUNGEON_CONFIG || {};
+        const bgEl = document.getElementById('dungeon-select-bg');
+        if (bgEl && cfg.bgMain) bgEl.style.backgroundImage = `url('${resolveAssetUrl(cfg.bgMain)}')`;
+        clearMemoryGoddessParticles();
+        hideAllScreens();
+        dungeonSelectScreen.classList.remove('screen-hidden', 'screen-fade-out');
+        dungeonSelectScreen.style.display = 'flex';
+        renderDungeonList();
+        updateVaultBar();
+        requestAnimationFrame(() => updateVaultBar());
+        dungeonSelectScreen.style.opacity = '0';
+        dungeonSelectScreen.offsetHeight;
+        dungeonSelectScreen.style.opacity = '';
+        fadeInScreen(dungeonSelectScreen);
+    };
+
+    function startGoldDungeonNoGuildIntro() {
+        clearMemoryGoddessParticles();
+        hideAllScreens();
+        const ui = document.getElementById('ui-layer');
+        if (ui) {
+            ui.style.transition = 'none';
+            ui.classList.add('ui-hidden');
+            ui.classList.remove('ui-shown', 'hidden');
+            ui.style.display = 'block';
+        }
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        requestAnimationFrame(() => {
+            if (ui) ui.style.transition = '';
+            window.gameEngine.init(goldDungeonNoGuildIntro, 0);
+        });
+    }
+
+    function showDungeon() {
+        const fromMain = !mainMenuScreen.classList.contains('screen-hidden');
+        if (fromMain) {
+            clearMemoryGoddessParticles();
+            mainMenuScreen.classList.add('screen-fade-out');
+            mainMenuScreen.style.pointerEvents = 'none';
+            setTimeout(() => {
+                hideAllScreens();
+                mainMenuScreen.classList.remove('screen-fade-out');
+                mainMenuScreen.style.pointerEvents = '';
+                if (!hasSeenGuildIntro()) {
+                    startGoldDungeonNoGuildIntro();
+                } else if (!hasSeenGoldDungeonIntro()) {
+                    markGoldDungeonIntroSeen();
+                    startGoldDungeonIntro();
+                } else {
+                    showDungeonList();
+                }
+            }, FADE_DUR);
+        } else {
+            startGoldDungeonIntro();
+        }
+    }
+
+    function getDungeonSkillTags(battle) {
+        if (!battle) return [];
+        const tags = [];
+        if (battle.skillFury) tags.push('스킬 광폭화');
+        if (battle.shieldAbsorb) tags.push('방패 흡수');
+        if (battle.shieldDestroy) tags.push('방패파괴');
+        if (battle.ignoreShield) tags.push('방패 무시');
+        if (battle.skillChargeReset) tags.push('스킬 0화');
+        if (battle.doubleAttack) tags.push('2연타');
+        if (battle.spiritBomb) tags.push('정령 폭탄');
+        if (battle.healReverse) {
+            const n = battle.healReverseTurns ?? 1;
+            tags.push(n === 1 ? '물약중독' : `${n}회 물약중독`);
+        }
+        if (battle.damageReflect) {
+            const pct = battle.damageReflectPercent ?? 50;
+            const n = battle.damageReflectTurns ?? 1;
+            tags.push(n === 1 ? `데미지 반사 ${pct}%` : `${n}회 데미지 반사 ${pct}%`);
+        }
+        if (battle.absoluteDefense) tags.push('절대 방어');
+        if (battle.skillSeal) tags.push('스킬 흡수 방해');
+        if (battle.vanishMostBlock) tags.push('소멸');
+        if (battle.tileBlock) tags.push('타일 막힘');
+        if (battle.blockArea2x2) tags.push('이동 불가 타일');
+        if (battle.goldReduce) tags.push('골드 감소');
+        const petrifyType = battle.petrifyBlockType || battle.freezeBlockType;
+        if (petrifyType === 'POTION') tags.push('물약 석화');
+        else if (petrifyType === 'SHIELD') tags.push('방패 석화');
+        else if (petrifyType === 'MAGIC') tags.push('마법 석화');
+        if (battle.banishBlocks) tags.push('랜덤 블럭 추방');
+        return tags;
+    }
+    // 리스트 버튼 전용. listCharPos 있을 때만 호출됨. 배틀처럼 상단(머리) 기준, 아래쪽은 wrap overflow로 잘림
+    function getDungeonBossImgStyle(boss) {
+        if (!boss) return '';
+        const pos = boss.listCharPos || {};
+        if (Object.keys(pos).length === 0) return '';
+        const scale = boss.listScale != null ? boss.listScale : 1;
+        const parts = [];
+        parts.push('position:absolute');
+        parts.push('height:auto'); parts.push('width:auto'); parts.push('max-height:none'); parts.push('max-width:none');
+        parts.push('transform-origin:top center');
+        if (pos.left !== undefined) parts.push(`left:${pos.left}`);
+        if (pos.right !== undefined) parts.push(`right:${pos.right}`);
+        if (pos.top !== undefined) { parts.push(`top:${pos.top}`); parts.push('bottom:auto'); }
+        if (pos.bottom !== undefined) { parts.push(`bottom:${pos.bottom}`); parts.push('top:auto'); }
+        const baseTx = (pos.transform || '').trim() || 'translateX(-50%)';
+        parts.push(`transform:${baseTx} scale(${scale})`);
+        return parts.join(';');
+    }
+    function renderDungeonList() {
+        dungeonListContainer.innerHTML = '';
+        const defeated = getGuildBossDefeated();
+        const stages = Object.values(window.DUNGEON_STAGES || {});
+        stages.forEach((d) => {
+            const btn = document.createElement('button');
+            btn.className = 'episode-btn dungeon-episode-btn';
+            if (d.image) btn.style.backgroundImage = `url('${resolveAssetUrl(d.image)}')`;
+            const turnInfo = d.turnLimit ? `${d.turnLimit}턴` : '';
+            const monsterSrc = (d.boss && d.boss.image) ? resolveAssetUrl(d.boss.image) : '';
+            const hasListPos = d.boss && d.boss.listCharPos && Object.keys(d.boss.listCharPos).length > 0;
+            const listScale = (d.boss && d.boss.listScale != null) ? d.boss.listScale : null;
+            const useListStyle = hasListPos || (listScale != null && listScale !== 1);
+            let imgStyle = '';
+            if (hasListPos) {
+                imgStyle = getDungeonBossImgStyle(d.boss);
+            } else if (listScale != null && listScale !== 1) {
+                imgStyle = 'height:auto;max-height:none;top:0;bottom:auto;transform-origin:top center;transform:translateX(-50%) scale(' + listScale + ');object-position:top center';
+            }
+            const monsterImg = monsterSrc
+                ? (useListStyle && imgStyle
+                    ? `<div class="dungeon-btn-monster-wrap"><img class="dungeon-btn-monster dungeon-btn-monster--list" src="${monsterSrc}" alt="" style="${imgStyle}"></div>`
+                    : `<img class="dungeon-btn-monster" src="${monsterSrc}" alt="">`)
+                : '';
+            const skillTags = getDungeonSkillTags(d.battle);
+            const skillTagsHtml = skillTags.length > 0
+                ? `<div class="dungeon-skill-tags">${skillTags.map(t => `<span class="dungeon-skill-tag">${t}</span>`).join('')}</div>`
+                : '';
+            const isDefeated = defeated.includes(d.id);
+            const defeatedStamp = isDefeated ? '<div class="dungeon-btn-defeated"><span>토벌<br>완료</span></div>' : '';
+            btn.innerHTML = `<div class="episode-btn-overlay"></div><div class="episode-btn-text"><span class="ep-num">${turnInfo} · 데미지=골드</span><span class="ep-title">${d.name || d.id}</span></div>${monsterImg}${skillTagsHtml}${defeatedStamp}`;
+            btn.onclick = () => {
+                window.gameEngine.playSound('click');
+                hideAllScreens();
+                window.gameEngine.launchDungeonBattle(d.id);
+            };
+            dungeonListContainer.appendChild(btn);
+        });
+    }
+
+    let _currentStoreVoice = null;
+    let _currentStoreVoiceOnEnded = null;
+    function playStoreVoice(voiceFile, onEnded) {
+        if (_currentStoreVoice) {
+            _currentStoreVoice.pause();
+            _currentStoreVoice.currentTime = 0;
+            _currentStoreVoice = null;
+        }
+        _currentStoreVoiceOnEnded = null;
+        if (!voiceFile) {
+            if (onEnded) onEnded();
+            return;
+        }
+        const base = window.STORE_VOICE_PATH || 'assets/sound/store/';
+        const path = base.startsWith('/') || base.includes('://') ? base + voiceFile : './' + base + voiceFile;
+        try {
+            const audio = new Audio(path);
+            _currentStoreVoice = audio;
+            _currentStoreVoiceOnEnded = onEnded;
+            audio.volume = 1;
+            const done = () => { if (_currentStoreVoice === audio) { _currentStoreVoice = null; _currentStoreVoiceOnEnded = null; } if (onEnded) onEnded(); };
+            audio.onended = done;
+            audio.onerror = done;
+            audio.play().catch(done);
+        } catch (e) {
+            _currentStoreVoice = null;
+            _currentStoreVoiceOnEnded = null;
+            if (onEnded) onEnded();
+        }
+    }
+    function stopStoreVoice() {
+        if (_currentStoreVoice) { _currentStoreVoice.pause(); _currentStoreVoice.currentTime = 0; _currentStoreVoice = null; }
+        _currentStoreVoiceOnEnded = null;
+    }
+    function stopStoreVoiceAndSkip(state) {
+        const cb = state && state.voiceSkipCallback;
+        if (!cb) return;
+        state.voiceSkipCallback = null;
+        if (_currentStoreVoice) {
+            _currentStoreVoice.pause();
+            _currentStoreVoice.currentTime = 0;
+            _currentStoreVoice = null;
+        }
+        _currentStoreVoiceOnEnded = null;
+        cb();
+    }
+
+    let shopState = { hasPurchased: false, touchCount: 0, scenarioTimeout: null, isLeaving: false, isShaking: false, hasPlayedEntryVoice: false, _settingChar: false, _pendingChar: null };
+    function clearShopScenarioTimeout() {
+        if (shopState.scenarioTimeout) { clearTimeout(shopState.scenarioTimeout); shopState.scenarioTimeout = null; }
+    }
+    async function setShopChar(scenarioKey, onVoiceEnd) {
+        if (shopState._settingChar) {
+            shopState._pendingChar = { scenarioKey, onVoiceEnd };
+            return;
+        }
+        shopState._settingChar = true;
+        shopState._pendingChar = null;
+        clearShopScenarioTimeout();
+        if (scenarioKey === 'default') shopState.touchCount = 0;
+        const cfg = window.SHOP_CONFIG || {};
+        const scenarios = cfg.charScenarios || {};
+        const def = scenarios.default || { image: 'assets/images/mio/mio_02.png', bubble: '어서오세요~\n무엇이 필요하신가요?' };
+        let data = scenarios[scenarioKey] || def;
+        if (scenarioKey === 'afterPurchase' && Array.isArray(scenarios.afterPurchase) && scenarios.afterPurchase.length) {
+            data = scenarios.afterPurchase[Math.floor(Math.random() * scenarios.afterPurchase.length)];
+        }
+        const charEl = document.getElementById('shop-char-img');
+        const charNext = document.getElementById('shop-char-img-next');
+        const bubbleEl = document.getElementById('shop-bubble');
+        shopState.voiceSkipCallback = onVoiceEnd ? () => { shopState._settingChar = false; shopState.voiceSkipCallback = null; onVoiceEnd(); } : null;
+        const defPath = def.image ? (def.image.includes('/') ? def.image : `assets/images/mio/${def.image}.png`) : 'assets/images/mio/mio_02.png';
+        const defFullPath = defPath.startsWith('/') || defPath.includes('://') ? defPath : './' + defPath;
+        const path = data.image ? (data.image.includes('/') ? data.image : `assets/images/mio/${data.image}.png`) : '';
+        const fullPath = path ? (path.startsWith('/') || path.includes('://') ? path : `./${path}`) : '';
+        const needsImageChange = charEl && charNext && data.image && fullPath;
+        let currentVisible = charEl && charNext ? (parseFloat(charEl.style.opacity || 0) > 0 ? charEl : charNext) : null;
+        let nextImage = charEl && charNext ? (currentVisible === charEl ? charNext : charEl) : null;
+        const targetFile = path ? path.split('/').pop() : '';
+        const imageAlreadySame = needsImageChange && currentVisible?.src && currentVisible.src.includes(targetFile);
+        const doImageSwap = async (imgPath) => {
+            if (!charEl || !charNext || !imgPath) return;
+            const p = imgPath.includes('/') ? imgPath : `assets/images/mio/${imgPath}.png`;
+            const fp = p.startsWith('/') || p.includes('://') ? p : './' + p;
+            const cur = parseFloat(charEl.style.opacity || 0) > 0 ? charEl : charNext;
+            const nxt = cur === charEl ? charNext : charEl;
+            if (cur.src && cur.src.includes((p.split('/').pop() || ''))) return;
+            nxt.style.opacity = '0';
+            nxt.style.transition = 'opacity 0.4s ease-in-out';
+            nxt.src = fp;
+            nxt.onerror = function() { this.src = 'assets/images/mio/mio_02.png'; };
+            await new Promise(r => {
+                if (nxt.complete && nxt.naturalWidth) return r();
+                nxt.onload = r;
+                nxt.onerror = r;
+                setTimeout(r, 3000);
+            });
+            await new Promise(r => setTimeout(r, 25));
+            nxt.style.opacity = '1';
+            cur.style.transition = 'opacity 0.4s ease-in-out';
+            cur.style.opacity = '0';
+        };
+        if (bubbleEl) bubbleEl.classList.add('bubble-wait');
+        await doImageSwap(fullPath || data.image);
+        await new Promise(r => setTimeout(r, 100));
+        if (bubbleEl && data.bubble) bubbleEl.textContent = data.bubble;
+        if (bubbleEl) { bubbleEl.offsetHeight; requestAnimationFrame(() => bubbleEl.classList.remove('bubble-wait')); }
+        const afterVoiceEnd = () => {
+            shopState.voiceSkipCallback = null;
+            const isLeave = scenarioKey === 'leaveNoPurchase' || scenarioKey === 'leaveAfterPurchase';
+            if (isLeave) {
+                if (onVoiceEnd) onVoiceEnd();
+                shopState._settingChar = false;
+            } else if (shopState.isLeaving) {
+                shopState._settingChar = false;
+            } else {
+                doImageSwap(defPath).then(() => {
+                    if (shopState.isLeaving) {
+                        const leaveData = scenarios.leaveAfterPurchase || scenarios.leaveNoPurchase || def;
+                        const lp = leaveData?.image ? (leaveData.image.includes('/') ? leaveData.image : `assets/images/mio/${leaveData.image}.png`) : defPath;
+                        doImageSwap(lp);
+                        shopState._settingChar = false;
+                        return;
+                    }
+                    if (scenarioKey === 'touchReaction') shopState.touchCount = 0;
+                    if (scenarioKey === 'afterPurchase' && bubbleEl && def) bubbleEl.textContent = def.bubble;
+                    if (onVoiceEnd) onVoiceEnd();
+                    shopState._settingChar = false;
+                    const pending = shopState._pendingChar;
+                    if (pending) { shopState._pendingChar = null; setShopChar(pending.scenarioKey, pending.onVoiceEnd); }
+                });
+            }
+        };
+        const playVoice = data.voice && (scenarioKey !== 'default' || !shopState.hasPlayedEntryVoice);
+        if (playVoice) {
+            if (scenarioKey === 'default') shopState.hasPlayedEntryVoice = true;
+            playStoreVoice(data.voice, afterVoiceEnd);
+        } else {
+            setTimeout(() => afterVoiceEnd(), 1500);
+        }
+    }
+    function exitShop() {
+        const overlay = document.getElementById('fade-out-overlay');
+        if (overlay) {
+            overlay.style.pointerEvents = 'auto';
+            overlay.classList.add('active');
+            overlay.style.transition = 'opacity 0.5s ease';
+        }
+        setTimeout(() => {
+            shopScreen.classList.add('screen-hidden');
+            showMainMenu();
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.style.pointerEvents = 'none';
+                setTimeout(() => { overlay.style.pointerEvents = ''; }, 550);
+            }
+        }, 520);
+    }
+    function onShopPurchased() {
+        if (window.gameEngine) window.gameEngine.playSound('shop_purchase');
+        shopState.hasPurchased = true;
+        stopStoreVoice();
+        clearShopScenarioTimeout();
+        shopState.voiceSkipCallback = null;
+        shopState._settingChar = false;
+        shopState._pendingChar = null;
+        setShopChar('afterPurchase');
+    }
+    function onShopCharTouch(e) {
+        if (shopState.isLeaving) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const now = Date.now();
+        if (!shopState._lastTouchSnd || now - shopState._lastTouchSnd > 120) {
+            shopState._lastTouchSnd = now;
+            if (window.gameEngine) window.gameEngine.playSound('touch');
+        }
+        const touch = e.touches ? e.touches[0] : e;
+        const rect = document.getElementById('shop-screen')?.getBoundingClientRect();
+        const scale = window.gameEngine?.currentScale || 1;
+        if (rect) {
+            const x = (touch.clientX - rect.left) / scale;
+            const y = (touch.clientY - rect.top) / scale;
+            const layer = document.getElementById('shop-particle-layer');
+            if (layer) {
+                for (let i = 0; i < 7; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.innerText = '♥';
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 70 + Math.random() * 120;
+                    const tx = Math.cos(angle) * dist;
+                    const ty = Math.sin(angle) * dist - 30;
+                    const tr = -60 + Math.random() * 120;
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    particle.style.setProperty('--tw-x', `${tx}px`);
+                    particle.style.setProperty('--tw-y', `${ty}px`);
+                    particle.style.setProperty('--tw-r', `${tr}deg`);
+                    layer.appendChild(particle);
+                    setTimeout(() => particle.remove(), 1200);
+                }
+            }
+        }
+        const wrap = document.querySelector('#shop-screen .shop-char-img-wrap');
+        if (wrap && !shopState.isShaking) {
+            shopState.isShaking = true;
+            wrap.classList.add('shop-char-shake');
+            wrap.addEventListener('animationend', function onEnd() {
+                wrap.removeEventListener('animationend', onEnd);
+                wrap.classList.remove('shop-char-shake');
+                shopState.isShaking = false;
+            }, { once: true });
+        }
+        shopState.touchCount++;
+        if (shopState.touchCount === 3) {
+            setShopChar('touchReaction');
+            shopState.scenarioTimeout = setTimeout(() => { setShopChar('default'); shopState.touchCount = 0; }, 3000);
+        }
+    }
+    const SHOP_INTRO_SEEN = 'shopIntroSeen';
+    function hasSeenShopIntro() {
+        try { return !!localStorage.getItem(SHOP_INTRO_SEEN); } catch { return false; }
+    }
+    function markShopIntroSeen() {
+        try { localStorage.setItem(SHOP_INTRO_SEEN, '1'); } catch (e) {}
+    }
+
+    function startShopIntro() {
+        document.getElementById('shop-back-btn').style.display = 'none';
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        clearMemoryGoddessParticles();
+        hideAllScreens();
+        const ui = document.getElementById('ui-layer');
+        if (ui) {
+            ui.style.transition = 'none';
+            ui.classList.add('ui-hidden');
+            ui.classList.remove('ui-shown', 'hidden');
+            ui.style.display = 'block';
+        }
+        markShopIntroSeen();
+        requestAnimationFrame(() => {
+            if (ui) ui.style.transition = '';
+            window.gameEngine.init(shopIntroData, 0);
+        });
+    }
+
+    window.showShopDirect = function showShopDirect() {
+        const overlay = document.getElementById('fade-out-overlay');
+        if (overlay) { overlay.classList.add('active'); overlay.style.pointerEvents = 'auto'; }
+        setTimeout(() => {
+            hideAllScreens();
+            shopScreen.classList.remove('screen-hidden', 'screen-fade-out');
+            shopScreen.style.display = 'flex';
+            shopScreen.style.opacity = '0';
+            shopScreen.offsetHeight;
+            shopScreen.style.opacity = '';
+            document.getElementById('shop-back-btn').style.display = '';
+            document.getElementById('shop-intro-btn').style.display = '';
+            shopState = { hasPurchased: false, touchCount: 0, scenarioTimeout: null, isLeaving: false, isShaking: false, hasPlayedEntryVoice: false };
+            const cfg = window.SHOP_CONFIG || {};
+            const bgEl = document.getElementById('shop-bg');
+            if (bgEl && cfg.bg) bgEl.style.backgroundImage = `url('${cfg.bg}')`;
+            const defImg = (cfg.charScenarios?.default?.image || 'assets/images/mio/mio_02.png').includes('/') ? (cfg.charScenarios.default.image || 'assets/images/mio/mio_02.png') : `assets/images/mio/${cfg.charScenarios?.default?.image || 'mio_02'}.png`;
+            const shopCharEl = document.getElementById('shop-char-img');
+            const shopCharNext = document.getElementById('shop-char-img-next');
+            if (shopCharEl) { shopCharEl.src = defImg.startsWith('/') || defImg.includes('://') ? defImg : './' + defImg; shopCharEl.style.opacity = '1'; }
+            if (shopCharNext) { shopCharNext.src = ''; shopCharNext.style.opacity = '0'; }
+            const shopBubble = document.getElementById('shop-bubble');
+            if (shopBubble && cfg.charScenarios?.default?.bubble) shopBubble.textContent = cfg.charScenarios.default.bubble;
+            setShopChar('default');
+            const charEl = document.getElementById('shop-char-img');
+            if (charEl) charEl.onerror = function() { this.src = 'assets/images/mio/mio_02.png'; };
+            renderShopProducts();
+            updateVaultBar();
+            if (overlay) overlay.classList.remove('active');
+            setTimeout(() => { if (overlay) overlay.style.pointerEvents = 'none'; }, 520);
+            const charWrap = document.querySelector('#shop-screen .shop-char-img-wrap');
+            if (charWrap && !charWrap.dataset.touchBound) {
+                charWrap.dataset.touchBound = '1';
+                charWrap.onclick = (e) => {
+                    if (!e.target.closest('.shop-char-img')) return;
+                    if (!shopState.isLeaving && shopState.voiceSkipCallback && _currentStoreVoice) { stopStoreVoiceAndSkip(shopState); return; }
+                    if (shopState._touchHandled) { shopState._touchHandled = false; return; }
+                    onShopCharTouch(e);
+                };
+                charWrap.addEventListener('touchstart', (e) => {
+                    if (!e.target.closest('.shop-char-img')) return;
+                    if (!shopState.isLeaving && shopState.voiceSkipCallback && _currentStoreVoice) { e.preventDefault(); stopStoreVoiceAndSkip(shopState); return; }
+                    e.preventDefault();
+                    shopState._touchHandled = true;
+                    onShopCharTouch(e);
+                    setTimeout(() => { shopState._touchHandled = false; }, 400);
+                }, { passive: false });
+            }
+            const shopCharArea = document.querySelector('#shop-screen .shop-char-area');
+            if (shopCharArea && !shopCharArea.dataset.skipBound) {
+                shopCharArea.dataset.skipBound = '1';
+                shopCharArea.addEventListener('click', (e) => {
+                    if (!shopState.isLeaving && shopState.voiceSkipCallback && _currentStoreVoice) { e.preventDefault(); e.stopPropagation(); stopStoreVoiceAndSkip(shopState); }
+                });
+                shopCharArea.addEventListener('touchstart', (e) => {
+                    if (!shopState.isLeaving && shopState.voiceSkipCallback && _currentStoreVoice) { e.preventDefault(); stopStoreVoiceAndSkip(shopState); }
+                }, { passive: false });
+            }
+        }, 520);
+    };
+
+    function showShop() {
+        const fromMain = !mainMenuScreen.classList.contains('screen-hidden');
+        if (fromMain && !hasSeenShopIntro()) {
+            clearMemoryGoddessParticles();
+            mainMenuScreen.classList.add('screen-fade-out');
+            mainMenuScreen.style.pointerEvents = 'none';
+            setTimeout(() => {
+                hideAllScreens();
+                mainMenuScreen.classList.remove('screen-fade-out');
+                mainMenuScreen.style.pointerEvents = '';
+                startShopIntro();
+            }, FADE_DUR);
+            return;
+        }
+        showShopDirect();
+    }
+
+    let goldShopState = { hasPurchased: false, touchCount: 0, scenarioTimeout: null, isLeaving: false, isShaking: false, hasPlayedEntryVoice: false, _settingChar: false, _pendingChar: null };
+    function clearGoldShopScenarioTimeout() {
+        if (goldShopState.scenarioTimeout) { clearTimeout(goldShopState.scenarioTimeout); goldShopState.scenarioTimeout = null; }
+    }
+    async function setGoldShopChar(scenarioKey, onVoiceEnd) {
+        if (goldShopState._settingChar) {
+            goldShopState._pendingChar = { scenarioKey, onVoiceEnd };
+            return;
+        }
+        goldShopState._settingChar = true;
+        goldShopState._pendingChar = null;
+        clearGoldShopScenarioTimeout();
+        if (scenarioKey === 'default') goldShopState.touchCount = 0;
+        const cfg = window.GOLD_SHOP_CONFIG || {};
+        const scenarios = cfg.charScenarios || {};
+        const def = scenarios.default || { image: 'assets/images/maya/maya_01.png', bubble: '어머? 애들은 오면 안되는데..' };
+        let data = scenarios[scenarioKey] || def;
+        if (scenarioKey === 'afterPurchase' && Array.isArray(scenarios.afterPurchase) && scenarios.afterPurchase.length) {
+            data = scenarios.afterPurchase[Math.floor(Math.random() * scenarios.afterPurchase.length)];
+        }
+        const charEl = document.getElementById('gold-shop-char-img');
+        const charNext = document.getElementById('gold-shop-char-img-next');
+        const bubbleEl = document.getElementById('gold-shop-bubble');
+        goldShopState.voiceSkipCallback = onVoiceEnd ? () => { goldShopState._settingChar = false; goldShopState.voiceSkipCallback = null; onVoiceEnd(); } : null;
+        const defPath = def.image ? (def.image.includes('/') ? def.image : `assets/images/maya/${def.image}.png`) : 'assets/images/maya/maya_01.png';
+        const path = data.image ? (data.image.includes('/') ? data.image : `assets/images/maya/${data.image}.png`) : '';
+        const fullPath = path ? (path.startsWith('/') || path.includes('://') ? path : `./${path}`) : '';
+        const doImageSwap = async (imgPath) => {
+            if (!charEl || !charNext || !imgPath) return;
+            const p = imgPath.includes('/') ? imgPath : `assets/images/maya/${imgPath}.png`;
+            const fp = p.startsWith('/') || p.includes('://') ? p : './' + p;
+            const cur = parseFloat(charEl.style.opacity || 0) > 0 ? charEl : charNext;
+            const nxt = cur === charEl ? charNext : charEl;
+            if (cur.src && cur.src.includes((p.split('/').pop() || ''))) return;
+            nxt.style.opacity = '0';
+            nxt.style.transition = 'opacity 0.4s ease-in-out';
+            nxt.src = fp;
+            nxt.onerror = function() { this.src = 'assets/images/maya/maya_01.png'; };
+            await new Promise(r => {
+                if (nxt.complete && nxt.naturalWidth) return r();
+                nxt.onload = r;
+                nxt.onerror = r;
+                setTimeout(r, 3000);
+            });
+            await new Promise(r => setTimeout(r, 25));
+            nxt.style.opacity = '1';
+            cur.style.transition = 'opacity 0.4s ease-in-out';
+            cur.style.opacity = '0';
+        };
+        if (bubbleEl) bubbleEl.classList.add('bubble-wait');
+        await doImageSwap(fullPath || data.image);
+        await new Promise(r => setTimeout(r, 100));
+        if (bubbleEl && data.bubble) bubbleEl.textContent = data.bubble;
+        if (bubbleEl) { bubbleEl.offsetHeight; requestAnimationFrame(() => bubbleEl.classList.remove('bubble-wait')); }
+        const afterVoiceEnd = () => {
+            goldShopState.voiceSkipCallback = null;
+            const isLeave = scenarioKey === 'leaveNoPurchase' || scenarioKey === 'leaveAfterPurchase';
+            if (isLeave) {
+                if (onVoiceEnd) onVoiceEnd();
+                goldShopState._settingChar = false;
+            } else if (goldShopState.isLeaving) {
+                goldShopState._settingChar = false;
+            } else {
+                doImageSwap(defPath).then(() => {
+                    if (goldShopState.isLeaving) {
+                        const leaveData = scenarios.leaveAfterPurchase || scenarios.leaveNoPurchase || def;
+                        const lp = leaveData?.image ? (leaveData.image.includes('/') ? leaveData.image : `assets/images/maya/${leaveData.image}.png`) : defPath;
+                        doImageSwap(lp);
+                        goldShopState._settingChar = false;
+                        return;
+                    }
+                    if (scenarioKey === 'touchReaction') goldShopState.touchCount = 0;
+                    if (scenarioKey === 'afterPurchase' && bubbleEl && def) bubbleEl.textContent = def.bubble;
+                    if (onVoiceEnd) onVoiceEnd();
+                    goldShopState._settingChar = false;
+                    const pending = goldShopState._pendingChar;
+                    if (pending) { goldShopState._pendingChar = null; setGoldShopChar(pending.scenarioKey, pending.onVoiceEnd); }
+                });
+            }
+        };
+        const playVoice = data.voice && (scenarioKey !== 'default' || !goldShopState.hasPlayedEntryVoice);
+        if (playVoice) {
+            if (scenarioKey === 'default') goldShopState.hasPlayedEntryVoice = true;
+            playStoreVoice(data.voice, afterVoiceEnd);
+        } else {
+            setTimeout(() => afterVoiceEnd(), 1500);
+        }
+    }
+    function exitGoldShop() {
+        const overlay = document.getElementById('fade-out-overlay');
+        if (overlay) {
+            overlay.style.pointerEvents = 'auto';
+            overlay.classList.add('active');
+            overlay.style.transition = 'opacity 0.5s ease';
+        }
+        setTimeout(() => {
+            goldShopScreen.classList.add('screen-hidden');
+            showMainMenu();
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.style.pointerEvents = 'none';
+                setTimeout(() => { overlay.style.pointerEvents = ''; }, 550);
+            }
+        }, 520);
+    }
+    function onGoldShopPurchased() {
+        if (window.gameEngine) window.gameEngine.playSound('gold_shop_purchase');
+        goldShopState.hasPurchased = true;
+        stopStoreVoice();
+        clearGoldShopScenarioTimeout();
+        goldShopState.voiceSkipCallback = null;
+        goldShopState._settingChar = false;
+        goldShopState._pendingChar = null;
+        setGoldShopChar('afterPurchase');
+    }
+    function onGoldShopCharTouch(e) {
+        if (goldShopState.isLeaving) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const now = Date.now();
+        if (!goldShopState._lastTouchSnd || now - goldShopState._lastTouchSnd > 120) {
+            goldShopState._lastTouchSnd = now;
+            if (window.gameEngine) window.gameEngine.playSound('touch');
+        }
+        const touch = e.touches ? e.touches[0] : e;
+        const rect = document.getElementById('gold-shop-screen')?.getBoundingClientRect();
+        const scale = window.gameEngine?.currentScale || 1;
+        if (rect) {
+            const x = (touch.clientX - rect.left) / scale;
+            const y = (touch.clientY - rect.top) / scale;
+            const layer = document.getElementById('gold-shop-particle-layer');
+            if (layer) {
+                for (let i = 0; i < 7; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.innerText = '♥';
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 70 + Math.random() * 120;
+                    const tx = Math.cos(angle) * dist;
+                    const ty = Math.sin(angle) * dist - 30;
+                    const tr = -60 + Math.random() * 120;
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    particle.style.setProperty('--tw-x', `${tx}px`);
+                    particle.style.setProperty('--tw-y', `${ty}px`);
+                    particle.style.setProperty('--tw-r', `${tr}deg`);
+                    layer.appendChild(particle);
+                    setTimeout(() => particle.remove(), 1200);
+                }
+            }
+        }
+        const wrap = document.querySelector('#gold-shop-screen .shop-char-img-wrap');
+        if (wrap && !goldShopState.isShaking) {
+            goldShopState.isShaking = true;
+            wrap.classList.add('shop-char-shake');
+            wrap.addEventListener('animationend', function onEnd() {
+                wrap.removeEventListener('animationend', onEnd);
+                wrap.classList.remove('shop-char-shake');
+                goldShopState.isShaking = false;
+            }, { once: true });
+        }
+        goldShopState.touchCount++;
+        if (goldShopState.touchCount === 3) {
+            setGoldShopChar('touchReaction');
+            goldShopState.scenarioTimeout = setTimeout(() => { setGoldShopChar('default'); goldShopState.touchCount = 0; }, 3000);
+        }
+    }
+    const GOLD_SHOP_INTRO_SEEN = 'goldShopIntroSeen';
+    function hasSeenGoldShopIntro() {
+        try { return !!localStorage.getItem(GOLD_SHOP_INTRO_SEEN); } catch { return false; }
+    }
+    function markGoldShopIntroSeen() {
+        try { localStorage.setItem(GOLD_SHOP_INTRO_SEEN, '1'); } catch (e) {}
+    }
+
+    function startGoldShopIntro() {
+        document.getElementById('gold-shop-back-btn').style.display = 'none';
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        clearMemoryGoddessParticles();
+        hideAllScreens();
+        const ui = document.getElementById('ui-layer');
+        if (ui) {
+            ui.style.transition = 'none';
+            ui.classList.add('ui-hidden');
+            ui.classList.remove('ui-shown', 'hidden');
+            ui.style.display = 'block';
+        }
+        markGoldShopIntroSeen();
+        requestAnimationFrame(() => {
+            if (ui) ui.style.transition = '';
+            window.gameEngine.init(goldShopIntroData, 0);
+        });
+    }
+
+    window.showGoldShopDirect = function showGoldShopDirect() {
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        const overlay = document.getElementById('fade-out-overlay');
+        if (overlay) { overlay.classList.add('active'); overlay.style.pointerEvents = 'auto'; }
+        setTimeout(() => {
+            hideAllScreens();
+            goldShopScreen.classList.remove('screen-hidden', 'screen-fade-out');
+            goldShopScreen.style.display = 'flex';
+            goldShopScreen.style.opacity = '0';
+            goldShopScreen.offsetHeight;
+            goldShopScreen.style.opacity = '';
+            document.getElementById('gold-shop-back-btn').style.display = '';
+            document.getElementById('gold-shop-intro-btn').style.display = '';
+            goldShopState = { hasPurchased: false, touchCount: 0, scenarioTimeout: null, isLeaving: false, isShaking: false, hasPlayedEntryVoice: false };
+            const cfg = window.GOLD_SHOP_CONFIG || {};
+            const defImgGold = (cfg.charScenarios?.default?.image || 'assets/images/maya/maya_01.png').includes('/') ? (cfg.charScenarios.default.image || 'assets/images/maya/maya_01.png') : `assets/images/maya/${cfg.charScenarios?.default?.image || 'maya_01'}.png`;
+            const goldCharEl = document.getElementById('gold-shop-char-img');
+            const goldCharNext = document.getElementById('gold-shop-char-img-next');
+            if (goldCharEl) { goldCharEl.src = defImgGold.startsWith('/') || defImgGold.includes('://') ? defImgGold : './' + defImgGold; goldCharEl.style.opacity = '1'; }
+            if (goldCharNext) { goldCharNext.src = ''; goldCharNext.style.opacity = '0'; }
+            const goldBubble = document.getElementById('gold-shop-bubble');
+            if (goldBubble && cfg.charScenarios?.default?.bubble) goldBubble.textContent = cfg.charScenarios.default.bubble;
+            const bgEl = document.getElementById('gold-shop-bg');
+            const titleEl = document.getElementById('gold-shop-title');
+            if (bgEl && cfg.bg) bgEl.style.backgroundImage = `url('${cfg.bg}')`;
+            if (titleEl && cfg.title) titleEl.textContent = cfg.title;
+            setGoldShopChar('default');
+            const charEl = document.getElementById('gold-shop-char-img');
+            if (charEl) charEl.onerror = function() { this.src = 'assets/images/maya/maya_01.png'; };
+            renderGoldShopProducts();
+            updateVaultBar();
+            if (overlay) overlay.classList.remove('active');
+            setTimeout(() => { if (overlay) overlay.style.pointerEvents = 'none'; }, 520);
+            const goldShopCharArea = document.querySelector('#gold-shop-screen .shop-char-area');
+            if (goldShopCharArea && !goldShopCharArea.dataset.skipBound) {
+                goldShopCharArea.dataset.skipBound = '1';
+                goldShopCharArea.addEventListener('click', (e) => {
+                    if (!goldShopState.isLeaving && goldShopState.voiceSkipCallback && _currentStoreVoice) { e.preventDefault(); e.stopPropagation(); stopStoreVoiceAndSkip(goldShopState); }
+                });
+                goldShopCharArea.addEventListener('touchstart', (e) => {
+                    if (!goldShopState.isLeaving && goldShopState.voiceSkipCallback && _currentStoreVoice) { e.preventDefault(); stopStoreVoiceAndSkip(goldShopState); }
+                }, { passive: false });
+            }
+            const charWrap = document.querySelector('#gold-shop-screen .shop-char-img-wrap');
+            if (charWrap && !charWrap.dataset.touchBound) {
+                charWrap.dataset.touchBound = '1';
+                charWrap.onclick = (e) => {
+                    if (!e.target.closest('.shop-char-img')) return;
+                    if (!goldShopState.isLeaving && goldShopState.voiceSkipCallback && _currentStoreVoice) { stopStoreVoiceAndSkip(goldShopState); return; }
+                    if (goldShopState._touchHandled) { goldShopState._touchHandled = false; return; }
+                    onGoldShopCharTouch(e);
+                };
+                charWrap.addEventListener('touchstart', (e) => {
+                    if (!e.target.closest('.shop-char-img')) return;
+                    if (!goldShopState.isLeaving && goldShopState.voiceSkipCallback && _currentStoreVoice) { e.preventDefault(); stopStoreVoiceAndSkip(goldShopState); return; }
+                    e.preventDefault();
+                    goldShopState._touchHandled = true;
+                    onGoldShopCharTouch(e);
+                    setTimeout(() => { goldShopState._touchHandled = false; }, 400);
+                }, { passive: false });
+            }
+        }, 520);
+    };
+
+    function showGoldShop() {
+        const fromMain = !mainMenuScreen.classList.contains('screen-hidden');
+        if (fromMain && !hasSeenGoldShopIntro()) {
+            clearMemoryGoddessParticles();
+            mainMenuScreen.classList.add('screen-fade-out');
+            mainMenuScreen.style.pointerEvents = 'none';
+            setTimeout(() => {
+                hideAllScreens();
+                mainMenuScreen.classList.remove('screen-fade-out');
+                mainMenuScreen.style.pointerEvents = '';
+                startGoldShopIntro();
+            }, FADE_DUR);
+            return;
+        }
+        showGoldShopDirect();
+    }
+
+    const GUILD_INTRO_SEEN = 'guildIntroSeen';
+    function hasSeenGuildIntro() {
+        try { return !!localStorage.getItem(GUILD_INTRO_SEEN); } catch { return false; }
+    }
+    function markGuildIntroSeen() {
+        try { localStorage.setItem(GUILD_INTRO_SEEN, '1'); } catch (e) {}
+    }
+    window.markGuildIntroSeen = markGuildIntroSeen;
+
+    function startGuildIntro() {
+        document.getElementById('guild-back-btn').style.display = 'none';
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        clearMemoryGoddessParticles();
+        hideAllScreens();
+        const ui = document.getElementById('ui-layer');
+        if (ui) {
+            ui.style.transition = 'none';
+            ui.classList.add('ui-hidden');
+            ui.classList.remove('ui-shown', 'hidden');
+            ui.style.display = 'block';
+        }
+        requestAnimationFrame(() => {
+            if (ui) ui.style.transition = '';
+            window.gameEngine.init(guildIntroData, 0);
+        });
+    }
+
+    let guildState = { touchCount: 0, scenarioTimeout: null, isLeaving: false, isShaking: false, hasPlayedEntryVoice: false, _settingChar: false, _pendingChar: null };
+    function clearGuildScenarioTimeout() {
+        if (guildState.scenarioTimeout) { clearTimeout(guildState.scenarioTimeout); guildState.scenarioTimeout = null; }
+    }
+    async function setGuildChar(scenarioKey, onVoiceEnd) {
+        if (guildState._settingChar) {
+            guildState._pendingChar = { scenarioKey, onVoiceEnd };
+            return;
+        }
+        guildState._settingChar = true;
+        guildState._pendingChar = null;
+        clearGuildScenarioTimeout();
+        if (scenarioKey === 'default') guildState.touchCount = 0;
+        const cfg = window.GUILD_CONFIG || {};
+        const scenarios = cfg.charScenarios || {};
+        const def = scenarios.default && typeof scenarios.default === 'object' && !Array.isArray(scenarios.default)
+            ? scenarios.default
+            : (Array.isArray(scenarios.default) ? scenarios.default[0] : null) || { image: 'assets/images/seria/seria_01.png', bubble: '아직 살아계셨군요...' };
+        let data = scenarios[scenarioKey] || def;
+        if (scenarioKey === 'default') data = def;
+        else if (scenarioKey === 'afterRewardClaim' && Array.isArray(scenarios.afterRewardClaim) && scenarios.afterRewardClaim.length) {
+            data = scenarios.afterRewardClaim[Math.floor(Math.random() * scenarios.afterRewardClaim.length)];
+        }
+        const charEl = document.getElementById('guild-char-img');
+        const charNext = document.getElementById('guild-char-img-next');
+        const bubbleEl = document.getElementById('guild-bubble');
+        guildState.voiceSkipCallback = onVoiceEnd ? () => { guildState._settingChar = false; guildState.voiceSkipCallback = null; onVoiceEnd(); } : null;
+        const defPath = def.image ? (def.image.includes('/') ? def.image : `assets/images/seria/${def.image}.png`) : 'assets/images/seria/seria_01.png';
+        const path = data.image ? (data.image.includes('/') ? data.image : `assets/images/seria/${data.image}.png`) : '';
+        const fullPath = path ? (path.startsWith('/') || path.includes('://') ? path : `./${path}`) : '';
+        const doImageSwap = async (imgPath) => {
+            if (!charEl || !charNext || !imgPath) return;
+            const p = imgPath.includes('/') ? imgPath : `assets/images/seria/${imgPath}.png`;
+            const fp = p.startsWith('/') || p.includes('://') ? p : './' + p;
+            const cur = parseFloat(charEl.style.opacity || 0) > 0 ? charEl : charNext;
+            const nxt = cur === charEl ? charNext : charEl;
+            if (cur.src && cur.src.includes((p.split('/').pop() || ''))) return;
+            nxt.style.opacity = '0';
+            nxt.style.transition = 'opacity 0.4s ease-in-out';
+            nxt.src = fp;
+            nxt.onerror = function() { this.src = 'assets/images/seria/seria_01.png'; };
+            await new Promise(r => {
+                if (nxt.complete && nxt.naturalWidth) return r();
+                nxt.onload = r;
+                nxt.onerror = r;
+                setTimeout(r, 3000);
+            });
+            await new Promise(r => setTimeout(r, 25));
+            nxt.style.opacity = '1';
+            cur.style.transition = 'opacity 0.4s ease-in-out';
+            cur.style.opacity = '0';
+        };
+        if (bubbleEl) bubbleEl.classList.add('bubble-wait');
+        await doImageSwap(fullPath || data.image);
+        await new Promise(r => setTimeout(r, 100));
+        if (bubbleEl && data.bubble) bubbleEl.textContent = data.bubble;
+        if (bubbleEl) { bubbleEl.offsetHeight; requestAnimationFrame(() => bubbleEl.classList.remove('bubble-wait')); }
+        const afterVoiceEnd = () => {
+            guildState.voiceSkipCallback = null;
+            if (scenarioKey === 'leave') {
+                if (onVoiceEnd) onVoiceEnd();
+                guildState._settingChar = false;
+            } else if (guildState.isLeaving) {
+                guildState._settingChar = false;
+            } else {
+                const restorePath = def.image ? (def.image.includes('/') ? def.image : `assets/images/seria/${def.image}.png`) : defPath;
+                doImageSwap(restorePath).then(() => new Promise(r => setTimeout(r, 450))).then(() => {
+                    if (guildState.isLeaving) {
+                        const leaveData = scenarios.leave || def;
+                        const lp = leaveData?.image ? (leaveData.image.includes('/') ? leaveData.image : `assets/images/seria/${leaveData.image}.png`) : defPath;
+                        doImageSwap(lp);
+                        guildState._settingChar = false;
+                        return;
+                    }
+                    if (scenarioKey === 'touchReaction') guildState.touchCount = 0;
+                    if (bubbleEl && def.bubble) bubbleEl.textContent = def.bubble;
+                    if (onVoiceEnd) onVoiceEnd();
+                    guildState._settingChar = false;
+                    const pending = guildState._pendingChar;
+                    if (pending) { guildState._pendingChar = null; setGuildChar(pending.scenarioKey, pending.onVoiceEnd); }
+                });
+            }
+        };
+        const playVoice = data.voice && (scenarioKey !== 'default' || !guildState.hasPlayedEntryVoice);
+        if (playVoice) {
+            if (scenarioKey === 'default') guildState.hasPlayedEntryVoice = true;
+            playStoreVoice(data.voice, afterVoiceEnd);
+        } else {
+            setTimeout(() => afterVoiceEnd(), 1500);
+        }
+    }
+    function exitGuild() {
+        const gc = document.getElementById('game-container');
+        if (gc) gc.classList.remove('guild-main-visible');
+        const overlay = document.getElementById('fade-out-overlay');
+        if (overlay) { overlay.classList.add('active'); overlay.style.pointerEvents = 'auto'; }
+        setTimeout(() => {
+            guildScreen.classList.add('screen-hidden');
+            guildScreen.classList.remove('screen-fade-out');
+            guildScreen.style.pointerEvents = '';
+            showMainMenu();
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.style.pointerEvents = 'none';
+                setTimeout(() => { overlay.style.pointerEvents = ''; }, 550);
+            }
+        }, 520);
+    }
+    function onGuildCharTouch(e) {
+        if (guildState.isLeaving) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const now = Date.now();
+        if (!guildState._lastTouchSnd || now - guildState._lastTouchSnd > 120) {
+            guildState._lastTouchSnd = now;
+            if (window.gameEngine) window.gameEngine.playSound('touch');
+        }
+        const touch = e.touches ? e.touches[0] : e;
+        const rect = document.getElementById('guild-screen')?.getBoundingClientRect();
+        const scale = window.gameEngine?.currentScale || 1;
+        if (rect) {
+            const x = (touch.clientX - rect.left) / scale;
+            const y = (touch.clientY - rect.top) / scale;
+            const layer = document.getElementById('guild-particle-layer');
+            if (layer) {
+                for (let i = 0; i < 7; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.innerText = '♥';
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 70 + Math.random() * 120;
+                    const tx = Math.cos(angle) * dist;
+                    const ty = Math.sin(angle) * dist - 30;
+                    const tr = -60 + Math.random() * 120;
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    particle.style.setProperty('--tw-x', `${tx}px`);
+                    particle.style.setProperty('--tw-y', `${ty}px`);
+                    particle.style.setProperty('--tw-r', `${tr}deg`);
+                    layer.appendChild(particle);
+                    setTimeout(() => particle.remove(), 1200);
+                }
+            }
+        }
+        const wrap = document.querySelector('#guild-screen .shop-char-img-wrap');
+        if (wrap && !guildState.isShaking) {
+            guildState.isShaking = true;
+            wrap.classList.add('shop-char-shake');
+            wrap.addEventListener('animationend', function onEnd() {
+                wrap.removeEventListener('animationend', onEnd);
+                wrap.classList.remove('shop-char-shake');
+                guildState.isShaking = false;
+            }, { once: true });
+        }
+        guildState.touchCount++;
+        if (guildState.touchCount === 3) {
+            setGuildChar('touchReaction');
+            guildState.scenarioTimeout = setTimeout(() => { setGuildChar('default'); guildState.touchCount = 0; }, 3000);
+        }
+    }
+
+    window.showGuildDirect = function showGuildDirect() {
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        const overlay = document.getElementById('fade-out-overlay');
+        if (overlay) { overlay.classList.add('active'); overlay.style.pointerEvents = 'auto'; }
+        setTimeout(() => {
+            hideAllScreens();
+            guildScreen.classList.remove('screen-hidden', 'screen-fade-out');
+            guildScreen.style.display = 'flex';
+            guildScreen.style.opacity = '0';
+            guildScreen.offsetHeight;
+            guildScreen.style.opacity = '';
+            document.getElementById('guild-back-btn').style.display = '';
+            document.getElementById('guild-intro-btn').style.display = '';
+            const cfg = window.GUILD_CONFIG || {};
+            const bgEl = document.getElementById('guild-bg');
+            if (bgEl) bgEl.style.backgroundImage = `url('${cfg.bg || 'assets/images/seria/bg_guild.jpg'}')`;
+            const def = cfg.charScenarios?.default && typeof cfg.charScenarios.default === 'object' && !Array.isArray(cfg.charScenarios.default)
+                ? cfg.charScenarios.default
+                : (Array.isArray(cfg.charScenarios?.default) ? cfg.charScenarios.default[0] : null) || { image: 'assets/images/seria/seria_01.png', bubble: '아직 살아계셨군요...' };
+            guildState = { touchCount: 0, scenarioTimeout: null, isLeaving: false, isShaking: false, hasPlayedEntryVoice: false, _settingChar: false, _pendingChar: null };
+            const defImg = def.image || 'assets/images/seria/seria_01.png';
+            const guildCharEl = document.getElementById('guild-char-img');
+            const guildCharNext = document.getElementById('guild-char-img-next');
+            if (guildCharEl) { guildCharEl.src = (defImg.startsWith('/') || defImg.includes('://') ? defImg : './' + defImg); guildCharEl.style.opacity = '1'; }
+            if (guildCharNext) { guildCharNext.src = ''; guildCharNext.style.opacity = '0'; }
+            const guildBubble = document.getElementById('guild-bubble');
+            if (guildBubble && def.bubble) guildBubble.textContent = def.bubble;
+            setGuildChar('default');
+            if (guildCharEl) guildCharEl.onerror = function() { this.src = 'assets/images/seria/seria_01.png'; };
+            renderGuildBossList();
+            if (overlay) overlay.classList.remove('active');
+            setTimeout(() => { if (overlay) overlay.style.pointerEvents = 'none'; }, 520);
+            // 길드 메인일 때 시나리오 레이어 완전히 가리기 (모바일 터치/스크롤 정상화)
+            const gc = document.getElementById('game-container');
+            if (gc) gc.classList.add('guild-main-visible');
+            const charWrap = document.querySelector('#guild-screen .shop-char-img-wrap');
+            if (charWrap && !charWrap.dataset.guildTouchBound) {
+                charWrap.dataset.guildTouchBound = '1';
+                charWrap.onclick = (e) => {
+                    if (!e.target.closest('.shop-char-img')) return;
+                    if (!guildState.isLeaving && guildState.voiceSkipCallback && _currentStoreVoice) { stopStoreVoiceAndSkip(guildState); return; }
+                    if (guildState._touchHandled) { guildState._touchHandled = false; return; }
+                    onGuildCharTouch(e);
+                };
+                charWrap.addEventListener('touchstart', (e) => {
+                    if (!e.target.closest('.shop-char-img')) return;
+                    if (!guildState.isLeaving && guildState.voiceSkipCallback && _currentStoreVoice) { e.preventDefault(); stopStoreVoiceAndSkip(guildState); return; }
+                    e.preventDefault();
+                    guildState._touchHandled = true;
+                    onGuildCharTouch(e);
+                }, { passive: false });
+            }
+        }, 520);
+    };
+
+    const GUILD_BOSS_DEFEATED_KEY = 'guildBossDefeated';
+    const GUILD_BOSS_REWARD_CLAIMED_KEY = 'guildBossRewardClaimed';
+    function getGuildBossDefeated() {
+        try {
+            const raw = localStorage.getItem(GUILD_BOSS_DEFEATED_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch { return []; }
+    }
+    function getGuildBossRewardClaimed() {
+        try {
+            const raw = localStorage.getItem(GUILD_BOSS_REWARD_CLAIMED_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch { return []; }
+    }
+    function setGuildBossDefeated(bossId) {
+        try {
+            const list = getGuildBossDefeated();
+            if (!list.includes(bossId)) {
+                list.push(bossId);
+                localStorage.setItem(GUILD_BOSS_DEFEATED_KEY, JSON.stringify(list));
+                if (typeof window.renderGuildBossList === 'function') window.renderGuildBossList();
+            }
+        } catch (e) {}
+    }
+    function setGuildBossRewardClaimed(bossId) {
+        try {
+            const list = getGuildBossRewardClaimed();
+            if (!list.includes(bossId)) {
+                list.push(bossId);
+                localStorage.setItem(GUILD_BOSS_REWARD_CLAIMED_KEY, JSON.stringify(list));
+            }
+        } catch (e) {}
+    }
+    window.setGuildBossDefeated = setGuildBossDefeated;
+
+    function renderGuildBossList() {
+        const container = document.getElementById('guild-boss-list');
+        if (!container) return;
+        container.innerHTML = '';
+        const stages = Object.values(window.DUNGEON_STAGES || {}).sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+        const defeated = getGuildBossDefeated();
+        const claimed = getGuildBossRewardClaimed();
+        stages.forEach((d) => {
+            const card = document.createElement('button');
+            card.className = 'guild-boss-card';
+            const imgSrc = (d.boss && d.boss.image) ? resolveAssetUrl(d.boss.image) : '';
+            const reward = d.goldReward
+                ? ((d.goldReward.min === d.goldReward.max)
+                    ? `${d.goldReward.min || 0}G`
+                    : `${d.goldReward.min || 0}~${d.goldReward.max || 0}G`)
+                : '-';
+            const isDefeated = defeated.includes(d.id);
+            const isClaimed = claimed.includes(d.id);
+            const goldAmount = d.goldReward ? (d.goldReward.min ?? d.goldReward.max ?? 0) : 0;
+            const stampText = isDefeated ? (isClaimed ? '토벌<br>완료' : '보상받기') : '';
+            const stampClass = isDefeated ? (isClaimed ? 'guild-boss-card-defeated' : 'guild-boss-card-defeated guild-boss-card-claimable') : '';
+            card.innerHTML = `
+                <div class="guild-boss-card-img-wrap">
+                    ${imgSrc ? `<img src="${imgSrc}" alt="${d.name || d.id}" draggable="false">` : ''}
+                    ${stampText ? `<div class="${stampClass}"><span>${stampText}</span></div>` : ''}
+                </div>
+                <div class="guild-boss-card-name">${d.name || d.id}</div>
+                <div class="guild-boss-card-reward">${reward}</div>
+            `;
+        card.onclick = () => {
+                window.gameEngine.playSound('click');
+                if (isDefeated && !isClaimed && goldAmount > 0) {
+                    addGoldDirect(goldAmount);
+                    setGuildBossRewardClaimed(d.id);
+                    if (typeof updateVaultBar === 'function') updateVaultBar();
+                    renderGuildBossList();
+                    setGuildChar('afterRewardClaim');
+                    if (window.gameEngine && typeof window.gameEngine.showAlertModal === 'function') {
+                        window.gameEngine.showAlertModal('보상 수령', `${goldAmount}G를 받았습니다!`);
+                    } else {
+                        alert(`${goldAmount}G를 받았습니다!`);
+                    }
+                } else {
+                    showGuildBossDetail(d);
+                }
+            };
+            container.appendChild(card);
+        });
+    }
+    window.renderGuildBossList = renderGuildBossList;
+
+    function showGuildBossDetail(boss) {
+        hideAllScreens();
+        guildBossDetailScreen.classList.remove('screen-hidden');
+        guildBossDetailScreen.style.display = 'flex';
+        const report = (window.GUILD_BOSS_REPORTS || GUILD_BOSS_REPORTS || {})[boss.id];
+        const bossImg = boss.introImage ? resolveAssetUrl(boss.introImage) : ((boss.boss && boss.boss.image) ? resolveAssetUrl(boss.boss.image) : '');
+        const html = buildGuildBossReportHtml(report, bossImg, boss);
+        document.getElementById('guild-boss-detail-content').innerHTML = html;
+    }
+    function buildGuildBossReportHtml(report, bossImg, boss) {
+        if (!report) {
+            return `<p style="color:#888;">(정보 준비 중)</p>`;
+        }
+        const esc = (s) => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const fmt = (text) => {
+            if (!text) return '';
+            return esc(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        };
+        const imgHtml = bossImg ? `<div class="guild-report-boss-img-wrap"><img src="${esc(bossImg)}" alt="${esc(report.name || boss.name)}" draggable="false"></div>` : '';
+        let body = '';
+        body += `<div class="guild-report-header">[ 던전 조사 보고서 #${String(report.reportNo || '').padStart(2, '0')} ]</div>`;
+        body += `<div class="guild-report-section"><div class="guild-report-section-title">1. 개체명 (Name)</div><div class="guild-report-text">공식 명칭: ${fmt(report.name)}</div>${report.alias ? `<div class="guild-report-text">모험가들 사이의 별칭: ${fmt(report.alias)}</div>` : ''}</div>`;
+        if (report.dangerLevel) body += `<div class="guild-report-section"><div class="guild-report-section-title">2. 위험 등급 (Danger Level)</div><div class="guild-report-text guild-report-danger">${fmt(report.dangerLevel)}</div></div>`;
+        if (report.ecology) body += `<div class="guild-report-section"><div class="guild-report-section-title">3. 생태 분석 (Ecology)</div><div class="guild-report-text">${fmt(report.ecology)}</div></div>`;
+        if (report.disposition) body += `<div class="guild-report-section"><div class="guild-report-section-title">4. 성향 및 성격 (Disposition)</div><div class="guild-report-text">${fmt(report.disposition)}</div></div>`;
+        if (report.combat) body += `<div class="guild-report-section"><div class="guild-report-section-title">5. 전투 특징 (Combat Intelligence)</div><div class="guild-report-text">${fmt(report.combat)}</div></div>`;
+        if (report.adventurerNote) body += `<div class="guild-report-section"><div class="guild-report-section-title">6. 모험가의 조언 (Adventurer's Note)</div><div class="guild-report-text guild-report-note">${fmt(report.adventurerNote)}</div></div>`;
+        return `<div class="guild-report">${imgHtml}<div class="guild-report-body">${body}</div></div>`;
+    }
+
+    function showGuild() {
+        const fromMain = !mainMenuScreen.classList.contains('screen-hidden');
+        if (fromMain && !hasSeenGuildIntro()) {
+            clearMemoryGoddessParticles();
+            mainMenuScreen.classList.add('screen-fade-out');
+            mainMenuScreen.style.pointerEvents = 'none';
+            setTimeout(() => {
+                hideAllScreens();
+                mainMenuScreen.classList.remove('screen-fade-out');
+                mainMenuScreen.style.pointerEvents = '';
+                startGuildIntro();
+            }, FADE_DUR);
+            return;
+        }
+        showGuildDirect();
+    }
+
+    function renderGoldShopProducts() {
+        const container = document.getElementById('gold-shop-products');
+        if (!container) return;
+        container.innerHTML = '';
+        const items = window.GOLD_SHOP_ITEMS || goldShopItems || [];
+        const state = (window.gameStorage && window.gameStorage.getState()) || getVaultState();
+        const hp = Math.max(5, state.playerMaxHp || 10);
+        const MIN_HP = 5;
+        items.forEach((item) => {
+            const price = item.price || 0;
+            const canAfford = hp >= price && (hp - price) >= MIN_HP;
+            const btn = document.createElement('button');
+            btn.className = 'shop-product-btn' + (!canAfford ? ' max' : '');
+            btn.innerHTML = `<div class="shop-product-icon">${item.icon || '🎁'}</div><div class="shop-product-name">${item.name || item.id}</div><div class="shop-product-price">${price}HP</div>`;
+            if (canAfford) {
+                btn.onclick = () => {
+                    window.gameEngine.playSound('click');
+                    if (hp < price || (hp - price) < MIN_HP) {
+                        window.gameEngine.showAlertModal('비밀 상점', `체력이 부족합니다. (필요: ${price}HP, 최소 ${MIN_HP}HP 유지)`, () => {
+                            clearGoldShopScenarioTimeout();
+                            setGoldShopChar('insufficientHp');
+                            goldShopState.scenarioTimeout = setTimeout(() => setGoldShopChar('default'), 3000);
+                        });
+                        return;
+                    }
+                    const min = item.goldRewardMin ?? item.goldReward ?? 0;
+                    const max = item.goldRewardMax ?? item.goldReward ?? 0;
+                    window.gameEngine.showSecretShopExchangeModal(price, min, max, () => {
+                        const goldReward = (min > 0 || max > 0)
+                            ? (() => { const lo = Math.min(min, max); const hi = Math.max(min, max); const steps = Math.floor((hi - lo) / 100) + 1; return lo + 100 * Math.floor(Math.random() * steps); })()
+                            : 0;
+                        if (window.gameStorage && window.gameStorage.secretShopPurchase) {
+                            window.gameStorage.secretShopPurchase(price, goldReward);
+                        } else if (window.gameStorage && window.gameStorage.subtractPlayerMaxHp) {
+                            window.gameStorage.subtractPlayerMaxHp(price);
+                            if (goldReward > 0) window.gameStorage.addGoldEarned(goldReward);
+                        } else {
+                            try {
+                                const KEY = '3x3_vault';
+                                const s = localStorage.getItem(KEY);
+                                const parsed = s ? JSON.parse(s) : {};
+                                const cur = Math.max(5, Number(parsed.playerMaxHp) || 10);
+                                parsed.playerMaxHp = Math.max(MIN_HP, cur - price);
+                                parsed.goldEarned = (Number(parsed.goldEarned) || 0) + goldReward;
+                                parsed.goldUsed = Number(parsed.goldUsed) || 0;
+                                parsed.blockLevels = parsed.blockLevels || { SWORD: 1, POTION: 1, SHIELD: 1, MAGIC: 1 };
+                                parsed.heartPurchaseCount = Number(parsed.heartPurchaseCount) || 0;
+                                localStorage.setItem(KEY, JSON.stringify(parsed));
+                            } catch (e) {}
+                        }
+                        updateVaultBar();
+                        renderGoldShopProducts();
+                        onGoldShopPurchased();
+                    });
+                };
+            } else {
+                btn.onclick = () => {
+                    window.gameEngine.playSound('click');
+                    clearGoldShopScenarioTimeout();
+                    setGoldShopChar('insufficientHp');
+                    goldShopState.scenarioTimeout = setTimeout(() => setGoldShopChar('default'), 3000);
+                };
+            }
+            container.appendChild(btn);
+        });
+    }
+
+    function resolveAssetUrl(p) {
+        if (!p || typeof p !== 'string') return '';
+        if (p.startsWith('data:') || p.includes('://')) return p;
+        const fixed = p.replace(/^\.\.\/\.\.\/assets\//, 'assets/');
+        try { return new URL(fixed, window.location.href).href; } catch (e) { return fixed; }
+    }
+    function addGoldUsedDirect(amount) {
+        try {
+            const KEY = '3x3_vault';
+            const s = localStorage.getItem(KEY);
+            const parsed = s ? JSON.parse(s) : {};
+            parsed.goldUsed = (Number(parsed.goldUsed) || 0) + (Number(amount) || 0);
+            localStorage.setItem(KEY, JSON.stringify(parsed));
+        } catch (e) {}
+    }
+    function addPlayerHpDirect(amount) {
+        try {
+            const KEY = '3x3_vault';
+            const s = localStorage.getItem(KEY);
+            const parsed = s ? JSON.parse(s) : {};
+            parsed.playerMaxHp = Math.max(5, (Number(parsed.playerMaxHp) || 10) + (Number(amount) || 0));
+            localStorage.setItem(KEY, JSON.stringify(parsed));
+        } catch (e) {}
+    }
+    function addHeartPurchaseCountDirect() {
+        try {
+            const KEY = '3x3_vault';
+            const s = localStorage.getItem(KEY);
+            const parsed = s ? JSON.parse(s) : {};
+            parsed.heartPurchaseCount = (Number(parsed.heartPurchaseCount) || 0) + 1;
+            localStorage.setItem(KEY, JSON.stringify(parsed));
+        } catch (e) {}
+    }
+    function getShopPrice(item, state) {
+        const base = item.basePrice || 50;
+        if (item.id === 'HEART') {
+            const cnt = state.heartPurchaseCount || 0;
+            return base * Math.pow(2, cnt);
+        }
+        const lv = (state.blockLevels && state.blockLevels[item.id]) ?? 1;
+        if (lv >= (item.maxLevel || 5)) return null;
+        return base * Math.pow(2, lv - 1);
+    }
+    function renderShopProducts() {
+        const container = document.getElementById('shop-products');
+        if (!container) return;
+        container.innerHTML = '';
+        const items = window.SHOP_ITEMS || shopItems || [];
+        const state = (window.gameStorage && window.gameStorage.getState()) || getVaultState();
+        const gold = Math.max(0, (state.goldEarned || 0) - (state.goldUsed || 0));
+        items.forEach((item) => {
+            const isHeart = item.id === 'HEART';
+            const curVal = isHeart ? (state.playerMaxHp || 10) : ((state.blockLevels && state.blockLevels[item.id]) ?? 1);
+            const maxVal = isHeart ? (item.maxHp || 99) : (item.maxLevel || 5);
+            const price = getShopPrice(item, state);
+            const isMax = curVal >= maxVal || price === null;
+            const btn = document.createElement('button');
+            btn.className = 'shop-product-btn' + (isMax ? ' max' : '');
+            const prefix = ['SWORD','POTION','SHIELD','MAGIC'].includes(item.id) ? item.id.toLowerCase() : null;
+            const iconHtml = prefix
+                ? `<img class="shop-product-icon-img" src="${BLOCK_IMG_BASE}${prefix}_${Math.min(5,Math.max(1, isMax ? curVal : curVal + 1))}.png" alt="${item.id}">`
+                : `<span class="shop-product-icon">${item.icon}</span>`;
+            const priceText = isMax ? 'MAX' : `${price}G`;
+            btn.innerHTML = `<div class="shop-product-icon-wrap">${iconHtml}</div><div class="shop-product-name">${item.name || item.id}</div><div class="shop-product-price">${priceText}</div>`;
+            if (!isMax) {
+                btn.onclick = () => {
+                    window.gameEngine.playSound('click');
+                    if (gold < price) {
+                        window.gameEngine.showAlertModal('상점', `골드가 부족합니다. (필요: ${price}G)`, () => {
+                            clearShopScenarioTimeout();
+                            setShopChar('insufficientGold');
+                            shopState.scenarioTimeout = setTimeout(() => setShopChar('default'), 3000);
+                        });
+                        return;
+                    }
+                    const modalBody = isHeart ? `체력 +${item.perPurchase || 5} (${price}G)` : `${item.name} Lv.${Math.min(5, ((state.blockLevels && state.blockLevels[item.id]) ?? 1) + 1)} (${price}G)`;
+                    const nextLv = isHeart ? null : Math.min(5, ((state.blockLevels && state.blockLevels[item.id]) ?? 1) + 1);
+                    const prefix = !isHeart && ['SWORD','POTION','SHIELD','MAGIC'].includes(item.id) ? item.id.toLowerCase() : null;
+                    const iconUrl = prefix ? `${BLOCK_IMG_BASE}${prefix}_${nextLv}.png` : null;
+                    window.gameEngine.showConfirmModal('구매 확인', modalBody, () => {
+                        if (window.gameStorage && window.gameStorage.addGoldUsed) window.gameStorage.addGoldUsed(price);
+                        else addGoldUsedDirect(price);
+                        if (isHeart) {
+                            const add = item.perPurchase || 5;
+                            if (window.gameStorage && window.gameStorage.addPlayerMaxHp) window.gameStorage.addPlayerMaxHp(add);
+                            else addPlayerHpDirect(add);
+                            if (window.gameStorage && window.gameStorage.addHeartPurchaseCount) window.gameStorage.addHeartPurchaseCount();
+                            else addHeartPurchaseCountDirect();
+                        } else {
+                            const lv = (state.blockLevels && state.blockLevels[item.id]) ?? 1;
+                            const newLv = Math.min(5, lv + 1);
+                            if (window.gameStorage && window.gameStorage.setBlockLevel) window.gameStorage.setBlockLevel(item.id, newLv);
+                            else {
+                                try {
+                                    const KEY = '3x3_vault';
+                                    const s = localStorage.getItem(KEY);
+                                    const parsed = s ? JSON.parse(s) : {};
+                                    parsed.blockLevels = parsed.blockLevels || { SWORD: 1, POTION: 1, SHIELD: 1, MAGIC: 1 };
+                                    parsed.blockLevels[item.id] = newLv;
+                                    parsed.goldEarned = Number(parsed.goldEarned) || 0;
+                                    parsed.goldUsed = Number(parsed.goldUsed) || 0;
+                                    parsed.playerMaxHp = Math.max(5, Number(parsed.playerMaxHp) || 10);
+                                    parsed.heartPurchaseCount = Number(parsed.heartPurchaseCount) || 0;
+                                    localStorage.setItem(KEY, JSON.stringify(parsed));
+                                } catch (e) {}
+                            }
+                        }
+                        updateVaultBar();
+                        renderShopProducts();
+                        onShopPurchased();
+                    }, iconUrl ? { iconUrl } : undefined);
+                };
+            } else {
+                btn.disabled = true;
+            }
+            container.appendChild(btn);
+        });
+    }
+
+    function hasUnclaimedGuildRewards() {
+        const defeated = getGuildBossDefeated();
+        const claimed = getGuildBossRewardClaimed();
+        return defeated.some(id => !claimed.includes(id));
+    }
+
+    function updateGuildBubble() {
+        const guildBtn = document.querySelector('.main-menu-map-btn[data-mode="guild"]');
+        if (!guildBtn) return;
+        let bubble = guildBtn.querySelector('.guild-reward-bubble');
+        const hasUnclaimed = hasUnclaimedGuildRewards();
+        if (hasUnclaimed) {
+            if (!bubble) {
+                bubble = document.createElement('span');
+                bubble.className = 'guild-reward-bubble';
+                bubble.textContent = '토벌완료';
+                guildBtn.appendChild(bubble);
+            }
+            bubble.style.display = '';
+        } else if (bubble) {
+            bubble.style.display = 'none';
+        }
+    }
+
+    function buildMainMenu() {
+        mainMenuList.innerHTML = '';
+        MAIN_MENU_MODES.forEach((mode) => {
+            const btn = document.createElement('button');
+            btn.className = 'main-menu-map-btn';
+            btn.dataset.mode = mode.id;
+            const p = mode.pos || {};
+            btn.style.top = p.top || '50%';
+            btn.style.left = p.left || '50%';
+            const img = mode.image || '';
+            const label = mode.label || mode.id;
+            btn.innerHTML = img
+                ? `<img src="${img}" alt="${mode.id}" class="main-menu-map-btn-img"><span class="main-menu-map-btn-label">${label}</span>`
+                : '';
+            btn.onclick = () => {
+                window.gameEngine.playSound('click');
+                if (mode.id === 'event') showCharacterSelect();
+                else if (mode.id === 'dungeon') showDungeon();
+                else if (mode.id === 'shop') showShop();
+                else if (mode.id === 'goldShop') showGoldShop();
+                else if (mode.id === 'guild') showGuild();
+                else if (mode.id === 'record') {
+                    window.gameEngine.showAlertModal('마법기록관', '(공사중)\n아스테리아의 모든 정보를 열람할 수 있는 곳입니다.', () => {});
+                }
+            };
+            mainMenuList.appendChild(btn);
+        });
+        if (!mainMenuList.dataset.touchBound) {
+            mainMenuList.dataset.touchBound = '1';
+            mainMenuList.addEventListener('touchstart', function(e) {
+                const btn = e.target.closest('.main-menu-map-btn');
+                if (btn && btn.onclick) {
+                    e.preventDefault();
+                    btn.onclick();
+                }
+            }, { passive: false });
+        }
+    }
+
+    function hideDialogueForEpisodeSelect() {
+        const ui = document.getElementById('ui-layer');
+        if (!ui) return;
+        ui.style.transition = 'none';
+        ui.classList.add('ui-hidden');
+        ui.classList.remove('ui-shown', 'hidden');
+        ui.style.display = 'none';
+    }
+
+    function showEpisodeSelect(char, fromGame = false) {
+        clearMemoryGoddessParticles();
+        const episodeList = window.gameEngine.getEpisodeList(char.data);
+        const cleared = window.gameEngine.getClearedEpisodes(char.id);
+
+        hideDialogueForEpisodeSelect();
+                menuScreen.style.display = 'none';
+        episodeSelectScreen.classList.remove('screen-hidden');
+        episodeSelectScreen.classList.remove('screen-visible');
+        episodeSelectTitle.textContent = `${char.name} - EPISODE SELECT`;
+
+        episodeListContainer.innerHTML = '';
+        if (!fromGame && episodeList.length === 0) {
+            startGame(char, -1);
+            return;
+        }
+        if (!fromGame && episodeList.length === 1) {
+            startGame(char, episodeList[0].index);
+            return;
+        }
+
+        if (!fromGame) {
+            requestAnimationFrame(() => episodeSelectScreen.classList.add('screen-visible'));
+        }
+        episodeList.forEach((ep, i) => {
+            const unlocked = i === 0 || cleared.includes(i - 1);
+            const btn = document.createElement('button');
+            btn.className = 'episode-btn' + (unlocked ? '' : ' locked');
+            if (ep.image) btn.style.backgroundImage = `url('${ep.image}')`;
+            const fullTitle = (ep.title || '').trim();
+            const firstLine = fullTitle.split(/\n\n+/)[0]?.replace(/^-\s*|\s*-$/g, '').trim() || '';
+            const epNum = /Epilogue/i.test(firstLine) ? 'Epilogue' : `Episode ${i + 1}`;
+            const storyTitle = fullTitle.split(/\n\n+/).pop()?.trim() || `에피소드 ${i + 1}`;
+            btn.innerHTML = `<div class="episode-btn-overlay"></div><div class="episode-btn-text"><span class="ep-num">${epNum}</span><span class="ep-title">${storyTitle}</span></div>`;
+            if (unlocked) {
+                btn.onclick = () => {
+                    window.gameEngine.playSound('click');
+                    episodeSelectScreen.classList.add('screen-hidden');
+                    const ui = document.getElementById('ui-layer');
+                    ui.style.transition = 'none';
+                    ui.classList.add('ui-hidden');
+                    ui.classList.remove('ui-shown', 'hidden');
+                    ui.style.display = 'block';
+                document.getElementById('back-btn').style.display = 'block';
+                document.getElementById('touch-mode-btn').style.display = 'block';
+                    requestAnimationFrame(() => {
+                        ui.style.transition = '';
+                        window.gameEngine.init(char.data, ep.index);
+                    });
+                };
+            }
+            episodeListContainer.appendChild(btn);
+        });
+
+        const goddessGiftArea = document.getElementById('goddess-gift-area');
+        if (goddessGiftArea) {
+            goddessGiftArea.innerHTML = '';
+            const lilyEpilogueCleared = char.id === 'lily' && episodeList.length > 0 && window.gameEngine.getClearedEpisodes('lily').includes(episodeList.length - 1);
+            if (lilyEpilogueCleared) {
+                const giftBtn = document.createElement('button');
+                giftBtn.className = 'episode-btn episode-btn--goddess-gift';
+                giftBtn.style.backgroundImage = "url('assets/images/memory/bg_3.jpg')";
+                giftBtn.innerHTML = `<div class="episode-btn-overlay"></div><div class="episode-btn-content"><div class="episode-btn-text"><span class="ep-num">여신의 선물</span><span class="ep-title">기다림의 증표</span></div><img class="episode-btn-pendant" src="assets/images/memory/lily_item.png" alt="할머니의 펜던트"></div>`;
+                giftBtn.onclick = () => {
+                window.gameEngine.playSound('click');
+                    window._goddessGiftReturnChar = char;
+                    episodeSelectScreen.classList.add('screen-hidden');
+                    const ui = document.getElementById('ui-layer');
+                    ui.style.transition = 'none';
+                    ui.classList.add('ui-hidden');
+                    ui.classList.remove('ui-shown', 'hidden');
+                    ui.style.display = 'block';
+                    document.getElementById('back-btn').style.display = 'block';
+                    document.getElementById('touch-mode-btn').style.display = 'none';
+                    requestAnimationFrame(() => {
+                        ui.style.transition = '';
+                        window.gameEngine.init(lilyGoddessGiftData, 0);
+                    });
+                };
+                goddessGiftArea.appendChild(giftBtn);
+            }
+        }
+
+        if (SPECIAL_EPISODE_CONFIG.enabled && char.id === SPECIAL_EPISODE_CONFIG.charId) {
+            const area = document.getElementById('special-episode-area');
+            area.innerHTML = '';
+            const allCleared = episodeList.length > 0 && window.gameEngine.getClearedEpisodes(char.id).includes(episodeList.length - 1);
+            const spBtn = document.createElement('button');
+            spBtn.className = 'episode-btn episode-btn--special' + (allCleared ? '' : ' locked');
+            spBtn.innerHTML = `<div class="episode-btn-overlay"></div><div class="episode-btn-text"><span class="ep-num">Special Episode</span><span class="ep-title">♥성인모드♥</span></div>`;
+            if (allCleared) {
+                spBtn.onclick = () => {
+                    window.gameEngine.playSound('click');
+                    const overlay = document.getElementById('special-episode-overlay');
+                    const img = document.getElementById('special-episode-img');
+                    const lines = document.getElementById('special-episode-lines');
+                    img.src = SPECIAL_EPISODE_CONFIG.image;
+                    lines.innerHTML = SPECIAL_EPISODE_CONFIG.lines.map(l => `<div>${l}</div>`).join('');
+                    overlay.classList.remove('hidden');
+                };
+            }
+            area.appendChild(spBtn);
+        } else {
+            document.getElementById('special-episode-area').innerHTML = '';
+        }
+    }
+
+    function closeSpecialEpisode() {
+        const overlay = document.getElementById('special-episode-overlay');
+        if (overlay && !overlay.classList.contains('hidden')) {
+            window.gameEngine.playSound('click');
+            overlay.classList.add('hidden');
+        }
+    }
+
+    function startGame(char, startIndex) {
+        hideAllScreens();
+        const gc = document.getElementById('game-container');
+        if (gc) gc.classList.remove('menu-visible');
+        const ui = document.getElementById('ui-layer');
+        ui.style.transition = 'none';
+        ui.classList.add('ui-hidden');
+        ui.classList.remove('ui-shown', 'hidden');
+        ui.style.display = 'block';
+        document.getElementById('back-btn').style.display = 'block';
+        document.getElementById('touch-mode-btn').style.display = 'block';
+        requestAnimationFrame(() => {
+            ui.style.transition = '';
+            window.gameEngine.init(char.data, startIndex);
+        });
+    }
+
+    function bindStoreBtnTouch(el, handler) {
+        if (!el) return;
+        el.onclick = handler;
+        el.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handler();
+        }, { passive: false });
+    }
+    bindStoreBtnTouch(document.getElementById('back-btn'), () => {
+        if (window.gameEngine) window.gameEngine.returnToMenu();
+    });
+    bindStoreBtnTouch(document.getElementById('menu-back-btn'), () => {
+        window.gameEngine.playSound('click');
+        showMainMenu();
+    });
+    bindStoreBtnTouch(document.getElementById('episode-back-btn'), () => {
+        window.gameEngine.playSound('click');
+        hideDialogueForEpisodeSelect();
+        hideAllScreens();
+        menuScreen.classList.remove('screen-hidden');
+        menuScreen.style.display = 'flex';
+        buildCharList();
+        if (listContainer) listContainer.scrollTop = 0;
+    });
+    bindStoreBtnTouch(document.getElementById('dungeon-back-btn'), () => {
+        window.gameEngine.playSound('click');
+        showMainMenu();
+    });
+    bindStoreBtnTouch(document.getElementById('dungeon-intro-btn'), () => {
+        window.gameEngine.playSound('click');
+        fadeOutThen(dungeonSelectScreen, () => startGoldDungeonIntro());
+    });
+    bindStoreBtnTouch(document.getElementById('shop-intro-btn'), () => {
+        window.gameEngine.playSound('click');
+        fadeOutThen(shopScreen, () => startShopIntro());
+    });
+    bindStoreBtnTouch(document.getElementById('shop-back-btn'), () => {
+        if (shopState.isLeaving) return;
+        window.gameEngine.playSound('click');
+        shopState.isLeaving = true;
+        clearShopScenarioTimeout();
+        stopStoreVoice();
+        shopState.voiceSkipCallback = null;
+        shopState._settingChar = false;
+        shopState._pendingChar = null;
+        if (!shopState.hasPurchased) {
+            setShopChar('leaveNoPurchase', exitShop);
+        } else {
+            setShopChar('leaveAfterPurchase', exitShop);
+        }
+    });
+    bindStoreBtnTouch(document.getElementById('gold-shop-intro-btn'), () => {
+        window.gameEngine.playSound('click');
+        fadeOutThen(goldShopScreen, () => startGoldShopIntro());
+    });
+    bindStoreBtnTouch(document.getElementById('gold-shop-back-btn'), () => {
+        if (goldShopState.isLeaving) return;
+        window.gameEngine.playSound('click');
+        goldShopState.isLeaving = true;
+        clearGoldShopScenarioTimeout();
+        stopStoreVoice();
+        goldShopState.voiceSkipCallback = null;
+        goldShopState._settingChar = false;
+        goldShopState._pendingChar = null;
+        if (!goldShopState.hasPurchased) {
+            setGoldShopChar('leaveNoPurchase', exitGoldShop);
+        } else {
+            setGoldShopChar('leaveAfterPurchase', exitGoldShop);
+        }
+    });
+
+    [document.getElementById('shop-products'), document.getElementById('gold-shop-products')].forEach(function(container) {
+        if (!container) return;
+        container.addEventListener('touchstart', function(e) {
+            const btn = e.target.closest('.shop-product-btn');
+            if (btn && !btn.disabled && btn.onclick) {
+                e.preventDefault();
+                btn.onclick();
+            }
+        }, { passive: false });
+    });
+    function bindGuildBtnTouch(el, handler) {
+        if (!el) return;
+        el.onclick = handler;
+        el.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handler();
+        }, { passive: false });
+    }
+    bindGuildBtnTouch(document.getElementById('guild-intro-btn'), () => {
+        window.gameEngine.playSound('click');
+        const gc = document.getElementById('game-container');
+        if (gc) gc.classList.remove('guild-main-visible');
+        fadeOutThen(guildScreen, () => startGuildIntro());
+    });
+    bindGuildBtnTouch(document.getElementById('guild-back-btn'), () => {
+        window.gameEngine.playSound('click');
+        if (guildState.isLeaving) return;
+        guildState.isLeaving = true;
+        stopStoreVoice();
+        clearGuildScenarioTimeout();
+        guildState.voiceSkipCallback = null;
+        guildState._settingChar = false;
+        guildState._pendingChar = null;
+        setGuildChar('leave', exitGuild);
+    });
+
+    bindStoreBtnTouch(document.getElementById('guild-boss-detail-back-btn'), () => {
+        window.gameEngine.playSound('click');
+        guildBossDetailScreen.classList.add('screen-hidden');
+        guildScreen.classList.remove('screen-hidden');
+        guildScreen.style.display = 'flex';
+    });
+
+    if (guildBossListWrap) {
+        guildBossListWrap.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                guildBossListWrap.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+    }
+    const guildBossList = document.getElementById('guild-boss-list');
+    if (guildBossList) {
+        guildBossList.addEventListener('touchstart', function(e) {
+            const card = e.target.closest('.guild-boss-card');
+            if (card && card.onclick) {
+                e.preventDefault();
+                card.onclick();
+            }
+        }, { passive: false });
+    }
+
+    function getClearedEpisodes(charId) {
+        try {
+            const raw = localStorage.getItem(`episodeClear_${charId}`);
+            if (!raw) return [];
+            return JSON.parse(raw);
+        } catch { return []; }
+    }
+
+    function isLilyEpilogueCleared() {
+        const engine = window.gameEngine;
+        if (!engine || !lilyData?.events) return false;
+        const episodeList = engine.getEpisodeList(lilyData);
+        if (!episodeList || episodeList.length === 0) return false;
+        const lastEpIdx = episodeList.length - 1;
+        return getClearedEpisodes('lily').includes(lastEpIdx);
+    }
+
+    function buildCharList() {
+        if (!listContainer) return;
+        listContainer.innerHTML = '';
+        const memoryChar = { id: 'memory', name: '인연의 기억', title: '프롤로그', image: 'assets/images/memory/godness_icon.png', data: memoryData };
+        const memoryCard = document.createElement('div');
+        memoryCard.className = 'char-card char-card--memory';
+        memoryCard.innerHTML = `<img class="char-thumb" src="${resolveAssetUrl(memoryChar.image)}"><div class="char-info"><div class="char-name">${memoryChar.name}</div><div class="char-desc">${memoryChar.title}</div></div>`;
+        memoryCard.onclick = () => {
+            window.gameEngine.playSound('click');
+            startMemoryIntro();
+        };
+        listContainer.appendChild(memoryCard);
+
+        const prologueCleared = hasSeenMemoryIntro();
+        const lilyEpilogueCleared = isLilyEpilogueCleared();
+        const charsToShow = !prologueCleared ? [] : (lilyEpilogueCleared ? characterList : characterList.filter(c => c.id === 'lily'));
+
+        charsToShow.forEach(char => {
+        const card = document.createElement('div');
+            card.className = 'char-card' + (char.id === 'lily' ? ' char-card--lily' : '');
+        const imgSrc = char.image ? char.image : 'https://placehold.co/100x100/333/FFF?text=?';
+            const betaBadge = char.id === 'lily' ? '<span class="char-badge char-badge--beta">베타</span>' : '';
+            card.innerHTML = `<img class="char-thumb" src="${imgSrc}"><div class="char-info"><div class="char-name">${char.name}</div><div class="char-desc">${char.title}</div></div>${betaBadge}`;
+        card.onclick = () => {
+            if (char.data) {
+                window.gameEngine.playSound('click');
+                    showEpisodeSelect(char);
+                } else window.gameEngine.showAlertModal("", "준비 중입니다.");
+        };
+        listContainer.appendChild(card);
+    });
+    }
+
+    window.gameEngine = new GameEngine();
+    window.showCharacterSelectFromMemory = showCharacterSelectFromMemory;
+    window.showEpisodeSelect = showEpisodeSelect;
+    window.spawnMemoryGoddessParticles = spawnMemoryGoddessParticles;
+    window.clearMemoryGoddessParticles = clearMemoryGoddessParticles;
+
+    window.showEpisodeSelectFromGame = function() {
+        const engine = window.gameEngine;
+        if (!engine?.data) return;
+        const gc = document.getElementById('game-container');
+        if (gc) gc.classList.add('menu-visible');
+        const char = {
+            id: engine.data.id,
+            name: engine.data.name,
+            data: engine.data
+        };
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('touch-mode-btn').style.display = 'none';
+        showEpisodeSelect(char, true);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                episodeSelectScreen.classList.add('screen-visible');
+            });
+        });
+    };
+
+    (function initSpecialEpisodeOverlay() {
+        if (!SPECIAL_EPISODE_CONFIG.enabled) return;
+        const overlay = document.getElementById('special-episode-overlay');
+        if (!overlay) return;
+        overlay.addEventListener('click', closeSpecialEpisode);
+        overlay.addEventListener('touchstart', (e) => { e.preventDefault(); closeSpecialEpisode(); }, { passive: false });
+    })();
+
+    buildMainMenu();
+    updateVaultBar();
+    updateGuildBubble();
+
+    (function initModalTouch() {
+        const modal = document.getElementById('game-modal');
+        if (!modal) return;
+        modal.addEventListener('touchstart', function(e) {
+            const btn = e.target.closest('button');
+            if (btn && modal.contains(btn)) {
+                e.preventDefault();
+                btn.click();
+            }
+        }, { passive: false });
+    })();
+
+    (function initListTouchDelegation() {
+        function delegateTouch(container, selector) {
+            if (!container) return;
+            container.addEventListener('touchstart', function(e) {
+                const el = e.target.closest(selector);
+                if (el && container.contains(el)) {
+                    e.preventDefault();
+                    if (el.onclick) el.onclick();
+                    else if (el.click) el.click();
+                }
+            }, { passive: false });
+        }
+        delegateTouch(document.getElementById('char-list-container'), '.char-card');
+        delegateTouch(document.getElementById('dungeon-list-container'), '.dungeon-episode-btn');
+        delegateTouch(document.getElementById('episode-list-container'), '.episode-btn');
+    })();
+
+    (function initTitleShimmer() {
+        const logo = document.getElementById('title-screen-logo');
+        const shimmer = document.querySelector('.title-screen-logo-shimmer');
+        if (!logo || !shimmer) return;
+        const applyMask = () => {
+            if (logo.src) {
+                shimmer.style.webkitMaskImage = 'url("' + logo.src + '")';
+                shimmer.style.maskImage = 'url("' + logo.src + '")';
+            }
+        };
+        if (logo.complete) applyMask();
+        else logo.addEventListener('load', applyMask);
+    })();
+
+    (function initTitleScreen() {
+        const titleScreen = document.getElementById('title-screen');
+        if (!titleScreen) return;
+        let done = false;
+        const toModeSelect = () => {
+            if (done) return;
+            done = true;
+            const textEl = titleScreen.querySelector('.title-screen-text');
+            if (textEl) textEl.style.display = 'none';
+            titleScreen.style.pointerEvents = 'none';
+            titleScreen.classList.add('title-zooming');
+            setTimeout(() => {
+                titleScreen.classList.add('title-fade-out');
+                showMainMenu(true);
+                const mainMenuScreen = document.getElementById('main-menu-screen');
+                if (mainMenuScreen) fadeInScreen(mainMenuScreen);
+                setTimeout(() => {
+                    titleScreen.style.display = 'none';
+                    titleScreen.classList.remove('title-fade-out');
+                }, 550);
+            }, 1200);
+        };
+        titleScreen.addEventListener('click', toModeSelect);
+        titleScreen.addEventListener('touchstart', (e) => { e.preventDefault(); toModeSelect(); }, { passive: false });
+    })();
+
+    window.showDungeonAfterBattle = function() {
+        window.showDungeonList();
+    };
+</script>
+</body>
+</html>

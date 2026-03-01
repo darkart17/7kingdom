@@ -1,0 +1,1478 @@
+/* 스케일 기준: 1080×1920 (세로 모바일). #game-container가 이 크기로 scale되므로 내부는 px 고정 */
+        @font-face {
+            font-family: 'Nanum Square Round';
+            font-weight: 300;
+            font-style: normal;
+            src: url('assets/fonts/NanumSquareRoundL.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Nanum Square Round';
+            font-weight: 400;
+            font-style: normal;
+            src: url('assets/fonts/NanumSquareRoundR.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Nanum Square Round';
+            font-weight: 700;
+            font-style: normal;
+            src: url('assets/fonts/NanumSquareRoundB.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Nanum Square Round';
+            font-weight: 800;
+            font-style: normal;
+            src: url('assets/fonts/NanumSquareRoundEB.ttf') format('truetype');
+        }
+        :root {
+            --design-w: 1080;
+            --design-h: 1920;
+            --font-game: 'Nanum Square Round', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            --point-color: #d4af37;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+        html {
+            overflow: hidden; height: 100%;
+            -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+            overscroll-behavior: none; -webkit-overflow-scrolling: touch;
+        }
+        body {
+            margin: 0; padding: 0; background: #000;
+            padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+            box-sizing: border-box;
+            display: flex; justify-content: center; align-items: center;
+            height: 100dvh; height: 100vh; min-height: -webkit-fill-available;
+            width: 100vw; overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+            font-family: var(--font-game);
+            font-size: 24px;
+        }
+
+        #game-container {
+            width: calc(var(--design-w) * 1px);
+            height: calc(var(--design-h) * 1px);
+            font-size: 24px;
+            font-family: var(--font-game);
+            background: #0a0a0a; display: flex; flex-direction: column;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            transform-origin: center center;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            z-index: 1;
+        }
+
+        /* === 타이틀 화면 === */
+        #title-screen {
+            position: absolute; inset: 0; z-index: 2500;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+            cursor: pointer; overflow: hidden;
+            transition: opacity 0.5s ease-out;
+        }
+        #title-screen.title-fade-out {
+            opacity: 0;
+        }
+        .title-screen-bg {
+            position: absolute; inset: 0; z-index: 0;
+            background: url('assets/images/main/title.jpg') no-repeat center center;
+            background-size: cover;
+            transition: transform 1.2s ease-out, opacity 1s ease-out;
+        }
+        #title-screen.title-zooming .title-screen-bg {
+            transform: scale(1.4);
+            opacity: 0;
+        }
+        .title-screen-logo-wrap {
+            position: relative; z-index: 1;
+            margin-top: 200px;
+            display: inline-block;
+            overflow: hidden;
+            animation: title-logo-idle 4s ease-in-out infinite;
+            transition: opacity 0.4s ease-out;
+        }
+        .title-screen-logo-shimmer {
+            position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(
+                105deg,
+                transparent 0%,
+                transparent 30%,
+                rgba(255,255,255,0.15) 40%,
+                rgba(255,255,255,0.35) 50%,
+                rgba(255,255,255,0.15) 60%,
+                transparent 70%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            background-position: 200% 0;
+            animation: title-logo-shimmer 12s linear infinite;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            -webkit-mask-image: url('assets/images/main/logo.png');
+            -webkit-mask-size: contain;
+            -webkit-mask-position: center;
+            -webkit-mask-repeat: no-repeat;
+            mask-image: url('assets/images/main/logo.png');
+            mask-size: contain;
+            mask-position: center;
+            mask-repeat: no-repeat;
+        }
+        @keyframes title-logo-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .title-screen-logo {
+            position: relative; display: block; z-index: 0;
+            width: auto; height: auto; max-width: none;
+            object-fit: contain;
+            transition: opacity 0.4s ease-out;
+        }
+        @keyframes title-logo-idle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        #title-screen.title-zooming .title-screen-logo-wrap {
+            opacity: 0;
+        }
+        .title-screen-text {
+            position: relative; z-index: 1;
+            color: #fff; font-size: 48px; font-weight: 800; font-family: var(--font-game);
+            margin-bottom: 280px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            animation: title-text-blink 2.5s ease-in-out infinite;
+        }
+        @keyframes title-text-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        /* === 최상위 메인 메뉴 === */
+        #main-menu-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2100; display: flex; flex-direction: column;
+            padding: 100px 65px 0 65px; box-sizing: border-box;
+        }
+        #main-menu-screen .main-menu-bg {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover; background-position: center;
+            background-color: #1a1a1a; z-index: 0;
+        }
+        #main-menu-screen .main-menu-title,
+        #main-menu-screen .main-menu-list,
+        #main-menu-screen .main-menu-vault-area,
+        #main-menu-screen .vault-bar {
+            position: relative; z-index: 1;
+        }
+        .main-menu-vault-area {
+            margin-top: auto; flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+        }
+        .main-menu-vault-line {
+            display: block; margin-bottom: 0; margin-left: -65px; margin-right: -65px; width: calc(100% + 130px);
+            overflow: visible; line-height: 0; position: relative; z-index: 10;
+        }
+        .main-menu-vault-line-img {
+            width: 100%; height: auto; display: block; object-fit: fill;
+            transform: translateY(50%);
+        }
+        .main-menu-title-img-wrap {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1; padding: 0;
+        }
+        .main-menu-title-img {
+            width: auto; height: auto; max-width: none; max-height: none; object-fit: contain;
+        }
+        #main-menu-screen .main-menu-title { display: none; }
+        #main-menu-screen .vault-bar {
+            margin-top: auto; margin-left: -65px; margin-right: -65px; width: calc(100% + 130px);
+            flex-shrink: 0;
+        }
+        #main-menu-screen {
+            opacity: 1;
+            transition: opacity 0.35s ease;
+        }
+        #main-menu-screen.screen-hidden { display: none !important; }
+        #main-menu-screen.screen-fade-out { opacity: 0; }
+        .main-menu-title {
+            color: var(--point-color); font-size: 64px; font-weight: 800; font-family: var(--font-game);
+            text-align: center;
+            margin-bottom: 48px; border-bottom: 3px solid var(--point-color); padding-bottom: 24px;
+        }
+        #main-menu-screen .main-menu-list {
+            position: absolute; inset: 0; z-index: 1;
+            flex: none; overflow: visible; display: block;
+            pointer-events: none; padding: 0;
+        }
+        #main-menu-screen .main-menu-list .main-menu-map-btn {
+            pointer-events: auto;
+        }
+        .main-menu-list::-webkit-scrollbar { display: none; }
+        .main-menu-map-btn {
+            position: absolute;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: none; border: none; padding: 0; cursor: pointer;
+            font-family: var(--font-game);
+            transition: filter 0.2s ease, transform 0.15s ease;
+            animation: main-menu-btn-idle 3s ease-in-out infinite;
+            touch-action: manipulation;
+        }
+        .main-menu-map-btn:hover { filter: brightness(1.15); animation-play-state: paused; }
+        .main-menu-map-btn:active { filter: brightness(0.9); transform: translate(-50%, -50%) scale(0.92); animation-play-state: paused; }
+        @keyframes main-menu-btn-idle {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-12px); }
+        }
+        .main-menu-map-btn-img {
+            display: block; width: auto; height: auto;
+            max-width: none; max-height: none; object-fit: contain;
+            pointer-events: none;
+        }
+        .main-menu-map-btn-label {
+            position: absolute; top: calc(50% + 40px); left: 50%; transform: translate(-50%, -50%);
+            color: #fff; font-size: 28px; font-weight: 800; font-family: var(--font-game);
+            text-shadow: 0 0 4px #000, 0 0 8px #000, 1px 1px 2px #000, -1px -1px 2px #000, 0 1px 4px rgba(0,0,0,0.9);
+            white-space: nowrap; pointer-events: none;
+        }
+        .guild-reward-bubble {
+            position: absolute; top: -50px; left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 16px;
+            font-size: 22px; font-weight: 800; font-family: var(--font-game); color: #fff;
+            background: rgba(233, 30, 140, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(233, 30, 140, 0.5);
+            white-space: nowrap; pointer-events: none;
+            z-index: 10;
+        }
+        .guild-reward-bubble::after {
+            content: '';
+            position: absolute; bottom: -8px; left: 50%;
+            margin-left: -8px;
+            border-width: 8px 8px 0; border-style: solid;
+            border-color: rgba(233, 30, 140, 0.95) transparent transparent transparent;
+        }
+
+        /* === 캐릭터 셀렉트 (던전/상점과 동일 구조) === */
+        #menu-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000; display: flex; flex-direction: column;
+            padding: 0; box-sizing: border-box;
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 0.35s ease;
+        }
+        #menu-screen.screen-hidden { display: none !important; }
+        #menu-screen.screen-fade-out { opacity: 0; }
+        .char-select-bg {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover; background-position: center;
+            background-color: #1a1a1a; z-index: 0;
+        }
+        #menu-screen .shop-header {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; flex-shrink: 0;
+            padding: 24px 40px; background: rgba(0,0,0,0.3);
+        }
+        #menu-screen .shop-header .episode-back-btn { background: rgba(0,0,0,0.85); }
+        #menu-screen .shop-title {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            color: var(--point-color); font-size: 48px; font-weight: 800; font-family: var(--font-game); white-space: nowrap;
+        }
+        .char-list {
+            position: relative; z-index: 1;
+            flex: 1; min-height: 0;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 29px;
+            padding: 24px 40px; scrollbar-width: none;
+            touch-action: pan-y; -webkit-overflow-scrolling: touch;
+        }
+        #menu-screen .vault-area {
+            display: none;
+        }
+        .char-list::-webkit-scrollbar { display: none; }
+        .char-card {
+            position: relative;
+            display: flex; align-items: center;
+            background: rgba(0, 0, 0, 0.57); border: 1px solid #444;
+            border-radius: 999px;
+            padding: 29px; cursor: pointer; flex-shrink: 0;
+            font-family: var(--font-game);
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .char-card:hover { background: rgba(0, 0, 0, 0.65); border-color: var(--point-color); box-shadow: 0 0 12px rgba(212, 175, 55, 0.2); }
+        .char-card:active { transform: scale(0.96); background: rgba(0, 0, 0, 0.5); }
+        .char-badge {
+            position: absolute; right: 24px; top: 50%;
+            transform: translateY(-50%);
+            padding: 16px 40px; border-radius: 999px;
+            font-size: 48px; font-weight: 800; letter-spacing: 1px;
+        }
+        .char-badge--beta {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff; box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+        }
+        .char-thumb {
+            width: 144px; height: 144px; border-radius: 50%;
+            object-fit: cover; border: 5px solid var(--point-color);
+            margin-right: 43px; flex-shrink: 0; background: #222;
+        }
+        .char-info { flex: 1; min-width: 0; }
+        .char-name { color: #aaa; font-size: 42px; font-weight: 800; font-family: var(--font-game); }
+        .char-desc { color: #999; font-size: 32px; font-family: var(--font-game); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .char-card--lily .char-name,
+        .char-card--lily .char-desc { color: #ff69b4; }
+        .char-card--memory .char-name,
+        .char-card--memory .char-desc { color: #d4af37; }
+
+        /* 에피소드 선택 화면 */
+        #episode-select-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
+            z-index: 1900; display: flex; flex-direction: column;
+            padding: 0 65px 80px 65px; box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        #episode-select-screen.screen-hidden { display: none !important; }
+        #episode-select-screen.screen-visible { opacity: 1 !important; }
+        #episode-select-screen .shop-header {
+            position: relative; flex-shrink: 0;
+            display: flex; align-items: center;
+            padding: 24px 40px; margin: 0 -65px 48px -65px;
+            background: rgba(0,0,0,0.3);
+        }
+        #episode-select-screen .shop-header .episode-back-btn { background: rgba(0,0,0,0.85); }
+        #episode-select-screen .shop-title {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            color: var(--point-color); font-size: 48px; font-weight: 800; font-family: var(--font-game); white-space: nowrap;
+        }
+        .episode-back-btn { background: rgba(0,0,0,0.7); color: #fff; border: 1px solid var(--point-color); padding: 16px 32px; cursor: pointer; border-radius: 6px; font-size: 28px; font-family: var(--font-game); font-weight: 800; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease; }
+        .episode-back-btn:hover { background: rgba(212, 175, 55, 0.25); border-color: var(--point-color); }
+        .episode-back-btn:active { transform: scale(0.94); background: rgba(212, 175, 55, 0.15); }
+        .episode-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+        .episode-list::-webkit-scrollbar { display: none; }
+        .episode-btn {
+            position: relative;
+            border: 2px solid var(--point-color); border-radius: 12px; padding: 32px 40px;
+            cursor: pointer; text-align: left; color: #fff; font-size: 36px; line-height: 1.4;
+            font-family: var(--font-game);
+            transition: opacity 0.2s, filter 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
+            background-color: rgba(30,30,30,0.9);
+            background-size: cover; background-position: center;
+            overflow: hidden;
+        }
+        .episode-btn-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none;
+            transition: background 0.2s ease;
+        }
+        .episode-btn .episode-btn-text { position: relative; z-index: 1; }
+        .episode-btn:hover:not(.locked) .episode-btn-overlay { background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(212,175,55,0.12) 100%); }
+        .episode-btn:active:not(.locked) { transform: scale(0.96); box-shadow: inset 0 2px 8px rgba(0,0,0,0.4); }
+        .episode-btn:active:not(.locked) .episode-btn-overlay { background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(212,175,55,0.08) 100%); }
+        .episode-btn.locked { cursor: not-allowed; filter: grayscale(100%) brightness(0.5); border-color: #555; }
+        .episode-btn.locked .episode-btn-overlay { background: rgba(0,0,0,0.6); }
+        .episode-btn .episode-btn-text { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-game); }
+        .episode-btn .episode-btn-text .ep-num { color: var(--point-color); font-size: 40px; font-weight: 800; }
+        .episode-btn .episode-btn-text .ep-title { color: #fff; font-size: 48px; font-weight: 800; line-height: 1.3; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+
+        /* 보관함 윗라인 (공통) */
+        .vault-area {
+            flex-shrink: 0; display: flex; flex-direction: column; align-items: stretch;
+            position: relative;
+        }
+        .vault-line {
+            display: block; margin-bottom: 0; width: 100%;
+            overflow: visible; line-height: 0; position: absolute; bottom: 100%; left: 0; right: 0;
+            z-index: 10;
+        }
+        .vault-line-img {
+            width: 100%; height: auto; display: block; object-fit: fill;
+            transform: translateY(50%);
+        }
+
+        /* 보관함 바 (6개 균등: 체력, 골드, 4블럭) */
+        .vault-bar {
+            flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 0;
+            padding: 53px 16px; margin-top: 20px;
+            background: rgba(10, 10, 10, 0.8); border-top: 2px solid var(--point-color);
+        }
+        .vault-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+            min-width: 0; position: relative; min-height: 150px;
+        }
+        .vault-item:not(:first-child):not(:last-child) {
+            margin-left: -12px; margin-right: -12px;
+        }
+        .vault-item:not(:first-child):not(:last-child)::before {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 150px; height: 150px; z-index: 0;
+            background: url('assets/images/main/icon_back.png') center/100% 100% no-repeat;
+        }
+        .vault-item .vault-item-icon {
+            width: 80px; height: 80px; object-fit: contain; font-size: 80px; line-height: 1;
+            position: relative; z-index: 1;
+        }
+        .vault-item:not(:first-child):not(:last-child) .vault-item-icon {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+        }
+        .vault-item img.vault-item-icon {
+            display: block;
+        }
+        /* 보관함 골드 동전 아이콘 100px - 골드는 마지막(6번째) */
+        .vault-item:last-child .vault-item-icon {
+            width: 100px; height: 100px; font-size: 100px;
+        }
+        .vault-item span.vault-item-icon {
+            display: flex; justify-content: center; align-items: center;
+        }
+        .vault-item-val {
+            font-size: 32px; font-weight: 800; color: var(--point-color);
+            text-align: center; z-index: 2;
+        }
+        .vault-item:not(:first-child):not(:last-child) .vault-item-val {
+            position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+        }
+        .vault-item:first-child .vault-item-val { color: #e74c3c; }
+        .vault-item:not(:first-child):not(:last-child) .vault-item-val { color: #fff; }
+        .vault-item:nth-child(6) .vault-item-val { color: #ffd700; }
+
+        /* 던전 선택 화면 (상단 헤더 상점과 동일) */
+        #dungeon-select-screen.screen-hidden { display: none !important; }
+        #dungeon-select-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000; display: flex; flex-direction: column;
+            overflow: hidden;
+            padding: 0; box-sizing: border-box;
+            opacity: 1;
+            transition: opacity 0.35s ease;
+        }
+        #dungeon-select-screen.screen-fade-out { opacity: 0; }
+        .dungeon-select-bg {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover; background-position: center;
+            background-color: #1a1a1a; z-index: 0;
+        }
+        #dungeon-select-screen .shop-header {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; flex-shrink: 0;
+            padding: 24px 40px; background: rgba(0,0,0,0.3);
+        }
+        #dungeon-select-screen .shop-header .episode-back-btn {
+            background: rgba(0,0,0,0.85);
+        }
+        #dungeon-select-screen .shop-header .dungeon-intro-btn {
+            margin-left: auto;
+        }
+        #dungeon-select-screen .shop-title {
+            position: absolute; left: 50%; transform: translateX(-50%); color: var(--point-color); font-size: 48px; font-weight: 800; font-family: var(--font-game); white-space: nowrap;
+        }
+        #dungeon-select-screen .episode-list {
+            position: relative; z-index: 1; padding: 24px 40px 80px 40px; flex: 1; min-height: 0;
+        }
+        #dungeon-select-screen .vault-bar {
+            position: relative; z-index: 1;
+            flex-shrink: 0; background: rgba(10, 10, 10, 0.8);
+            padding: 61px 24px; margin-top: 0;
+            border-top: 2px solid var(--point-color);
+        }
+        /* 던전 버튼: 배경 이미지 제거, 캐릭터 셀렉트처럼 반투명 스타일 */
+        #dungeon-select-screen .dungeon-episode-btn {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            padding-right: 20px; padding-top: 32px; padding-bottom: 72px;
+            min-height: 300px;
+            background-image: none !important;
+            background-color: rgba(0, 0, 0, 0.77);
+            border-color: #444;
+            overflow: hidden;
+            font-family: var(--font-game);
+        }
+        #dungeon-select-screen .dungeon-episode-btn:hover:not(.locked) {
+            background-color: rgba(0, 0, 0, 0.85);
+            border-color: var(--point-color);
+        }
+        #dungeon-select-screen .dungeon-episode-btn:active:not(.locked) {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        #dungeon-select-screen .dungeon-episode-btn .episode-btn-overlay {
+            background: transparent;
+        }
+        #dungeon-select-screen .dungeon-episode-btn:hover:not(.locked) .episode-btn-overlay {
+            background: rgba(212, 175, 55, 0.08);
+        }
+        #dungeon-select-screen .dungeon-episode-btn .episode-btn-text {
+            flex: 1; min-width: 0; align-self: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-top: 8px;
+            font-family: var(--font-game);
+        }
+        /* 버튼을 좌우 반으로 나누어, 몬스터를 오른쪽 절반 영역 중앙에 배치 */
+        /* 던전 버튼 왼쪽 하단 특수 스킬 태그 - 기본(22px/6px 14px) 대비 1.5배 */
+        #dungeon-select-screen .dungeon-episode-btn .dungeon-skill-tags {
+            position: absolute; bottom: 16px; left: 40px;
+            display: flex; flex-wrap: wrap; gap: 9px; z-index: 2;
+            pointer-events: none;
+        }
+        #dungeon-select-screen .dungeon-episode-btn .dungeon-skill-tag {
+            padding: 9px 21px;
+            background: rgba(0,0,0,0.7); border: 2px solid #e74c3c;
+            border-radius: 18px;
+            font-size: 33px; font-weight: 800; font-family: var(--font-game); color: #e74c3c;
+            white-space: nowrap;
+        }
+        #dungeon-select-screen .dungeon-btn-monster-wrap {
+            position: absolute;
+            left: 25%;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #dungeon-select-screen .dungeon-btn-monster {
+            position: absolute;
+            left: 75%;
+            bottom: 0;
+            height: 100%;
+            max-height: 100%;
+            width: auto;
+            max-width: 50%;
+            object-fit: contain;
+            object-position: bottom center;
+            z-index: 2;
+            pointer-events: none;
+            transform: translateX(-50%);
+        }
+        /* 리스트 전용: 래퍼가 overflow:hidden → 머리(상단) 기준, 아래쪽 잘림 (배틀과 동일) */
+        #dungeon-select-screen .dungeon-btn-monster-wrap .dungeon-btn-monster--list {
+            display: block;
+            top: 0;
+            bottom: auto;
+            height: auto;
+            max-height: none;
+            max-width: none;
+            object-fit: contain;
+            object-position: top center;
+        }
+        #dungeon-select-screen .dungeon-episode-btn .dungeon-btn-defeated {
+            position: absolute;
+            left: 75%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 210px; height: 210px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.35);
+            border-radius: 50%;
+            border: 12px solid #c00;
+            opacity: 0.8;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #dungeon-select-screen .dungeon-episode-btn .dungeon-btn-defeated span {
+            font-size: 63px; font-weight: 900; color: #c00;
+            font-family: var(--font-game);
+            line-height: 1.1; text-align: center;
+            padding: 0 6px;
+        }
+
+        /* 상점 화면 (업그레이드 상점, 비밀 상점 공통) */
+        #shop-screen.screen-hidden, #gold-shop-screen.screen-hidden, #guild-screen.screen-hidden, #guild-boss-detail-screen.screen-hidden { display: none !important; }
+        #shop-screen.screen-fade-out, #gold-shop-screen.screen-fade-out, #guild-screen.screen-fade-out, #guild-boss-detail-screen.screen-fade-out { opacity: 0; transition: opacity 0.35s ease; }
+        #shop-screen, #gold-shop-screen, #guild-screen, #guild-boss-detail-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000; display: flex; flex-direction: column;
+            padding: 0; box-sizing: border-box;
+            overflow: hidden;
+            transition: opacity 0.35s ease;
+        }
+        #shop-screen .shop-char-area .shop-char-float, #gold-shop-screen .shop-char-area .shop-char-float, #guild-screen .shop-char-area .shop-char-float { pointer-events: none; }
+        #shop-screen .shop-char-img-wrap, #gold-shop-screen .shop-char-img-wrap, #guild-screen .shop-char-img-wrap { pointer-events: none; }
+        #shop-screen .shop-char-img-wrap .shop-char-img,
+        #shop-screen .shop-char-img-wrap .shop-char-img-next,
+        #gold-shop-screen .shop-char-img-wrap .shop-char-img,
+        #gold-shop-screen .shop-char-img-wrap .shop-char-img-next,
+        #guild-screen .shop-char-img-wrap .shop-char-img {
+            pointer-events: auto; cursor: pointer;
+            -webkit-user-drag: none; user-drag: none; user-select: none; -webkit-user-select: none;
+        }
+        .shop-char-img-wrap { position: relative; min-height: 520px; display: flex; justify-content: center; align-items: flex-end; }
+        .shop-char-img-wrap .shop-char-img,
+        .shop-char-img-wrap .shop-char-img-next {
+            position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+            transition: opacity 0.4s ease-in-out; width: auto; height: auto;
+        }
+        .shop-char-img-wrap .shop-char-img-next { opacity: 0; }
+        #shop-particle-layer, #gold-shop-particle-layer, #guild-particle-layer { position: absolute; inset: 0; pointer-events: none; z-index: 9999; }
+        @keyframes shop-char-shake {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(-6px); }
+            75% { transform: translateY(4px); }
+        }
+        .shop-char-shake { animation: shop-char-shake 0.2s ease-in-out; }
+        #shop-screen .shop-bg, #gold-shop-screen .shop-bg, #guild-screen .shop-bg {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover; background-position: center;
+            background-color: #1a1a1a; z-index: 0;
+        }
+        #shop-screen .shop-char-area, #gold-shop-screen .shop-char-area, #guild-screen .shop-char-area {
+            position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+            z-index: 0.5; overflow: visible;
+        }
+        #guild-screen .shop-char-area {
+            z-index: 0.5;
+        }
+        #shop-screen .shop-char-area .shop-char-float, #gold-shop-screen .shop-char-area .shop-char-float, #guild-screen .shop-char-area .shop-char-float {
+            position: absolute; left: 50%; bottom: 172px;
+            transform: translateX(-50%); transform-origin: center bottom;
+        }
+        #shop-screen .shop-header, #gold-shop-screen .shop-header, #guild-screen .shop-header, #guild-boss-detail-screen .shop-header {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; flex-shrink: 0;
+            padding: 24px 40px; background: rgba(0,0,0,0.3);
+        }
+        #shop-screen .shop-header .episode-back-btn, #gold-shop-screen .shop-header .episode-back-btn, #guild-screen .shop-header .episode-back-btn, #guild-boss-detail-screen .shop-header .episode-back-btn {
+            background: rgba(0,0,0,0.85);
+        }
+        #shop-screen .shop-header .shop-intro-btn {
+            margin-left: auto;
+        }
+        #gold-shop-screen .shop-header .gold-shop-intro-btn, #guild-screen .shop-header .guild-intro-btn {
+            margin-left: auto;
+        }
+        /* 길드 보스 의뢰 패널 */
+        .guild-boss-panel {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            height: 480px;
+            z-index: 2;
+            background: #000;
+            border-radius: 24px 24px 0 0;
+            padding: 16px 20px 20px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+        }
+        .guild-boss-panel-title {
+            font-size: 48px; font-weight: 800; font-family: var(--font-game); color: #ffd700;
+            margin-bottom: 12px; flex-shrink: 0;
+            text-align: center;
+        }
+        .guild-boss-list-wrap {
+            flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 20px;
+            padding-bottom: 20px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            display: flex; flex-direction: column;
+        }
+        .guild-boss-list-wrap::-webkit-scrollbar { display: none; }
+        .guild-boss-list {
+            display: flex; gap: 16px; padding: 8px 4px;
+            width: max-content;
+            flex: 1; min-height: 0; align-items: stretch;
+        }
+        .guild-boss-card {
+            flex-shrink: 0;
+            width: 220px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+            background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25);
+            border-radius: 16px; padding: 20px 12px;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .guild-boss-card:hover { transform: scale(1.03); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+        .guild-boss-card-img-wrap {
+            position: relative; width: min(100%, 160px); height: 150px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border-radius: 12px; background: rgba(0,0,0,0.2);
+        }
+        .guild-boss-card-img-wrap img {
+            width: auto; height: 100%; object-fit: contain;
+            user-select: none; -webkit-user-drag: none; -moz-user-drag: none;
+            pointer-events: none;
+        }
+        .guild-boss-card-defeated {
+            position: absolute;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px; height: 140px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.35);
+            border-radius: 50%;
+            border: 6px solid #c00;
+            opacity: 0.8;
+        }
+        .guild-boss-card-defeated span {
+            font-size: 63px; font-weight: 900; color: #c00; font-family: var(--font-game);
+            line-height: 1.1; text-align: center;
+            padding: 0 6px;
+        }
+        .guild-boss-card-claimable {
+            border-color: #ffd700;
+        }
+        .guild-boss-card-claimable span {
+            color: #ffd700;
+            text-shadow: 0 0 2px #fff;
+        }
+        .guild-boss-card { font-family: var(--font-game); }
+        .guild-boss-card-name { font-size: 32px; font-weight: 800; color: #fff; margin-top: 10px; text-align: center; line-height: 1.2; }
+        .guild-boss-card-reward { font-size: 40px; color: #ffd700; font-weight: 800; margin-top: 6px; text-align: center; }
+        /* 길드 보스 상세 - 던전 조사 보고서 */
+        #guild-boss-detail-screen .guild-boss-detail-bg { background-color: #1a1a1a; }
+        #guild-boss-detail-screen .guild-boss-detail-content {
+            flex: 1; overflow: hidden; padding: 24px 40px;
+            color: #fff; font-size: 38px; line-height: 1.65;
+            display: flex; flex-direction: column; min-height: 0;
+        }
+        .guild-report {
+            flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 0;
+        }
+        .guild-report-boss-img-wrap {
+            flex-shrink: 0; text-align: center; padding-bottom: 16px;
+        }
+        .guild-report-boss-img-wrap img {
+            width: 50%; height: auto; display: block; margin: 0 auto;
+            object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .guild-report-body {
+            flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0;
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .guild-report-body::-webkit-scrollbar { display: none; }
+        .guild-report-header {
+            font-size: 48px; font-weight: 800; font-family: var(--font-game); color: var(--point-color);
+            text-align: center; margin-bottom: 8px;
+        }
+        .guild-report-body { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
+        .guild-report-section { margin-bottom: 4px; }
+        .guild-report-section-title {
+            font-size: 40px; font-weight: 800; font-family: var(--font-game); color: #ffd700;
+            margin-bottom: 8px; border-bottom: 1px solid rgba(255,215,0,0.3);
+            padding-bottom: 6px;
+        }
+        .guild-report-text {
+            font-size: 36px; line-height: 1.7; color: rgba(255,255,255,0.95);
+        }
+        .guild-report-text strong { color: #ffd700; }
+        .guild-report-danger { color: #ff6b6b; font-weight: 800; }
+        .guild-report-note {
+            font-style: italic; color: rgba(255,255,255,0.9);
+            background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px;
+            border-left: 4px solid var(--point-color);
+        }
+        #shop-screen .shop-header, #gold-shop-screen .shop-header, #guild-screen .shop-header, #guild-boss-detail-screen .shop-header { position: relative; }
+        #shop-screen .shop-title, #gold-shop-screen .shop-title, #guild-screen .shop-title, #guild-boss-detail-screen .shop-title { position: absolute; left: 50%; transform: translateX(-50%); color: var(--point-color); font-size: 48px; font-weight: 800; font-family: var(--font-game); white-space: nowrap; }
+        .shop-main {
+            flex: 1; position: relative; min-height: 0; z-index: 1; pointer-events: none;
+        }
+        .shop-char-float {
+            position: relative;
+            display: flex; flex-direction: column;
+            align-items: center;
+            transform-origin: bottom center;
+            animation: shop-char-idle 3s ease-in-out infinite;
+            overflow: visible;
+        }
+        @keyframes shop-char-idle {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -12px); }
+        }
+        /* 상단 배치. \n만 줄바꿈, 가로폭은 텍스트 길이에 맞춤 */
+        .shop-bubble {
+            position: absolute; top: 0; left: 50%;
+            transform: translateX(-50%);
+            margin-top: 140px;
+            width: max-content;
+            max-width: min(720px, 85vw);
+            padding: 24px 40px 32px;
+            font-size: 36px; line-height: 1.5; color: #fff; text-align: center;
+            background: rgba(233, 30, 140, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 6px 24px rgba(233, 30, 140, 0.4);
+            white-space: pre;
+            z-index: 1;
+            transition: opacity 0.25s ease-out;
+        }
+        /* 숨김은 즉시 (깜박임 방지), 페이드인만 애니메이션 */
+        .shop-bubble.bubble-wait { opacity: 0; transition: none; }
+        #shop-screen .shop-bubble {
+            background: rgba(59, 130, 246, 0.9);
+            box-shadow: 0 6px 24px rgba(59, 130, 246, 0.4);
+        }
+        #shop-screen .shop-bubble::after {
+            border-color: rgba(59, 130, 246, 0.9) transparent transparent transparent;
+        }
+        .shop-bubble::after {
+            content: '';
+            position: absolute; bottom: -11px; left: 50%;
+            margin-left: -12px;
+            border-width: 12px 12px 0; border-style: solid;
+            border-color: rgba(233, 30, 140, 0.9) transparent transparent transparent;
+        }
+        .shop-char-img {
+            width: auto; height: auto; max-height: none; object-fit: contain; display: block; vertical-align: bottom;
+        }
+        #shop-screen .shop-products, #gold-shop-screen .shop-products {
+            position: relative; z-index: 1;
+            flex-shrink: 0; display: flex; justify-content: center; gap: 20px;
+            padding: 24px 40px; margin-bottom: 0; background: rgba(0,0,0,0.7);
+        }
+        #shop-screen #vault-bar-shop, #gold-shop-screen #vault-bar-gold-shop {
+            position: relative; z-index: 1;
+            margin-top: 0;
+            background: #0a0a0a;
+        }
+        .shop-product-btn { touch-action: manipulation; }
+        .shop-product-btn {
+            flex: 1; max-width: 220px; display: flex; flex-direction: column;
+            align-items: center; gap: 8px; padding: 20px 16px;
+            background: rgba(0,0,0,0.8); border: 2px solid var(--point-color);
+            border-radius: 16px; cursor: pointer; color: #fff;
+            transition: transform 0.2s, background 0.2s, border-color 0.2s;
+            font-family: var(--font-game);
+        }
+        .shop-product-btn:hover:not(.max) {
+            background: rgba(212, 175, 55, 0.15);
+            transform: scale(1.03);
+        }
+        .shop-product-btn.max { opacity: 0.6; cursor: default; border-color: #555; }
+        .shop-product-btn.max .shop-product-icon { filter: grayscale(100%); }
+        .shop-product-icon { font-size: 96px; line-height: 1; }
+        .shop-product-icon-wrap { display: flex; justify-content: center; align-items: center; min-height: 150px; }
+        .shop-product-icon-img { width: auto; height: auto; max-width: none; max-height: none; object-fit: contain; }
+        .shop-product-name { font-size: 28px; font-weight: 800; font-family: var(--font-game); }
+        .shop-product-price { font-size: 39px; font-weight: 800; color: #ffd700; font-family: var(--font-game); }
+        .shop-product-btn.max .shop-product-price { color: #888; }
+        #gold-shop-products .shop-product-price { color: #e74c3c; }
+        #gold-shop-products .shop-product-btn.max .shop-product-price { color: #888; }
+        .secret-shop-modal-intro { margin-bottom: 20px; font-size: 36px; line-height: 1.5; }
+        .secret-shop-modal-cost { margin: 12px 0; font-size: 40px; }
+        .secret-shop-modal-reward { margin: 12px 0; font-size: 40px; }
+        .secret-shop-modal-question { font-size: 38px; }
+
+        /* 여신의 선물 (릴리 클리어 보상) */
+        #goddess-gift-area {
+            margin-top: 24px; flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 24px; width: 100%;
+        }
+        .episode-btn--goddess-gift {
+            width: 100%; box-sizing: border-box;
+            border-color: #3498db; border-radius: 12px;
+        }
+        .episode-btn--goddess-gift .episode-btn-overlay { border-radius: inherit; background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.3) 100%); }
+        .episode-btn--goddess-gift:hover:not(.locked) .episode-btn-overlay { background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(52,152,219,0.15) 60%, rgba(52,152,219,0.1) 100%); }
+        .episode-btn--goddess-gift .episode-btn-content {
+            position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%;
+        }
+        .episode-btn--goddess-gift .episode-btn-text { flex: 1; min-width: 0; font-family: var(--font-game); }
+        .episode-btn--goddess-gift .episode-btn-text .ep-num { color: #3498db; }
+        .episode-btn--goddess-gift .episode-btn-pendant {
+            flex-shrink: 0; width: 140px; height: 140px; object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(255, 200, 100, 0.8));
+        }
+
+        /* 스페셜 에피소드 (베타용 - 제거 시 이 블록 전체 삭제) */
+        #special-episode-area {
+            margin-top: 48px; flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 48px; width: 100%;
+        }
+        .episode-btn--special {
+            width: 100%; box-sizing: border-box;
+            border-color: #e91e8c; border-radius: 24px;
+        }
+        .episode-btn--special .episode-btn-overlay {
+            border-radius: inherit;
+        }
+        .episode-btn--special:hover:not(.locked) .episode-btn-overlay { background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(233,30,140,0.2) 100%); }
+        .episode-btn--special .episode-btn-text { font-family: var(--font-game); }
+        .episode-btn--special .episode-btn-text .ep-num { color: #e91e8c; }
+        .special-episode-overlay {
+            position: absolute; inset: 0; z-index: 2000;
+            display: flex; flex-direction: column;
+            background: radial-gradient(circle, #222 0%, #000 100%);
+            cursor: pointer;
+        }
+        .special-episode-overlay.hidden { display: none !important; }
+        .special-episode-char-area {
+            flex: 1; display: flex; justify-content: center; align-items: flex-end;
+            overflow: hidden;
+        }
+        @keyframes special-episode-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-29px); } }
+        .special-episode-floating {
+            position: relative; width: 100%; height: 100%;
+            bottom: -29px;
+            display: grid; grid-template: 1fr / 1fr; align-items: end; justify-items: center;
+            animation: special-episode-float 4s ease-in-out infinite;
+        }
+        .special-episode-char-wrap {
+            display: flex; align-items: flex-end; justify-content: center;
+            width: 100%; height: 100%;
+        }
+        .special-episode-img-wrap {
+            position: relative; display: inline-block;
+        }
+        #special-episode-img {
+            display: block; width: auto; height: auto;
+            max-width: none; max-height: none;
+            object-fit: contain; pointer-events: none; vertical-align: bottom;
+        }
+        .special-episode-bubble {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            bottom: 100%; margin-bottom: 12px;
+            width: max-content;
+            max-width: min(720px, 85vw);
+            padding: 24px 40px 32px;
+            font-size: 36px; line-height: 1.5; color: #fff;
+            text-align: center; border-radius: 20px;
+            white-space: pre;
+            background: #e91e8c;
+            box-shadow: 0 6px 24px rgba(233, 30, 140, 0.4);
+            z-index: 10;
+            pointer-events: none;
+        }
+        .special-episode-bubble::after {
+            content: '';
+            position: absolute; bottom: -11px; left: 50%;
+            margin-left: -12px;
+            border-width: 12px 12px 0;
+            border-style: solid;
+            border-color: #e91e8c transparent transparent transparent;
+        }
+        #special-episode-lines { color: inherit; font-weight: 800; }
+
+        /* 상단 UI 버튼 */
+        .top-ui { position: absolute; top: 38px; left: 0; width: 100%; padding: 0 43px; display: flex; justify-content: space-between; z-index: 1500; box-sizing: border-box; pointer-events: none; }
+        .top-ui button { pointer-events: auto; background: rgba(0, 0, 0, 0.7); color: #fff; border: 1px solid var(--point-color); padding: 16px 32px; cursor: pointer; border-radius: 6px; font-weight: 800; font-family: var(--font-game); font-size: 28px; display: none; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease; }
+        .top-ui button:hover { background: rgba(212, 175, 55, 0.2); border-color: var(--point-color); }
+        .top-ui button:active { transform: scale(0.94); background: rgba(212, 175, 55, 0.15); }
+
+        /* === 캐릭터 영역 === */
+        #character-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; justify-content: center; align-items: flex-end; 
+            background: radial-gradient(circle, #222 0%, #000 100%); 
+            z-index: 1; 
+            overflow: hidden;
+        }
+        
+        @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-29px); } }
+        #floating-wrapper { 
+            position: relative; width: 100%; height: 100%;
+            bottom: -29px;
+            animation: floating 4s ease-in-out infinite;
+            /* 가로만 센터, 세로는 기존(하단 기준) */
+            display: grid;
+            grid-template: 1fr / 1fr;
+            align-items: end;
+            justify-items: center;
+        }
+
+        @keyframes verticalShake {
+            0%, 100% { transform: translate(-50%, 0); }
+            25% { transform: translate(-50%, -7px); }
+            75% { transform: translate(-50%, 5px); }
+        }
+        @keyframes verticalShakeMon {
+            0%, 100% { transform: translate(-50%, 0); }
+            25% { transform: translate(-50%, -7px); }
+            75% { transform: translate(-50%, 5px); }
+        }
+        #character-image,
+        #character-image-next { 
+            /* 모든 캐릭터: 동일한 기준점으로 고정 (이미지 교체 시 좌우 튐 방지) */
+            position: absolute !important;
+            left: 50% !important;
+            right: auto !important;
+            bottom: 0 !important;
+            top: auto !important;
+            transform: translateX(-50%);
+            width: auto;
+            height: auto;
+            transition: opacity 0.4s ease-in-out;
+            will-change: opacity; z-index: 2;
+            pointer-events: none;
+        }
+        #character-image-next {
+            opacity: 0;
+        }
+        #game-container[data-memory] #character-image,
+        #game-container[data-memory] #character-image-next {
+            bottom: 200px !important;
+            filter: drop-shadow(0 0 30px rgba(255, 140, 0, 0.9)) drop-shadow(0 0 60px rgba(255, 69, 0, 0.6)) drop-shadow(0 0 90px rgba(200, 50, 0, 0.4));
+            animation: goddess-aura-pulse 3s ease-in-out infinite;
+        }
+        @keyframes goddess-aura-pulse {
+            0%, 100% { filter: drop-shadow(0 0 25px rgba(255, 140, 0, 0.8)) drop-shadow(0 0 50px rgba(255, 69, 0, 0.5)) drop-shadow(0 0 75px rgba(200, 50, 0, 0.3)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 160, 0, 1)) drop-shadow(0 0 80px rgba(255, 100, 0, 0.7)) drop-shadow(0 0 120px rgba(220, 80, 0, 0.5)); }
+        }
+        #memory-goddess-particles {
+            position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: visible;
+        }
+        #scene-item-image {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            z-index: 5; pointer-events: none; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 2s ease-out;
+        }
+        #scene-item-image:not(.hidden) { opacity: 1; }
+        #scene-item-image.hidden { display: none !important; opacity: 0; }
+        #scene-item-image img {
+            max-width: 280px; max-height: 280px; object-fit: contain;
+            filter: drop-shadow(0 0 25px rgba(255, 200, 100, 0.9)) drop-shadow(0 0 50px rgba(255, 160, 0, 0.6)) drop-shadow(0 0 80px rgba(255, 120, 0, 0.4));
+            animation: scene-item-glow-pulse 3s ease-in-out infinite;
+            opacity: 0; transform: scale(0.5);
+            transition: opacity 2s ease-out, transform 2s ease-out;
+        }
+        #scene-item-image:not(.hidden) img {
+            opacity: 1; transform: scale(1);
+        }
+        /* 골드 던전 인트로 경비병 (겹침 허용) */
+        #gold-dungeon-guards {
+            position: absolute; inset: 0; z-index: 3; pointer-events: none;
+        }
+        /* 경비대장: 경비병 위 레이어 */
+        #game-container[data-gold-dungeon-intro] #floating-wrapper { z-index: 4; position: relative; }
+        /* 길드 인트로: 캐릭터 하단 중앙 고정 */
+        #game-container[data-guild-intro] #character-layer { display: flex; justify-content: center; align-items: flex-end; }
+        #game-container[data-guild-intro] #floating-wrapper { justify-items: center; }
+        #game-container[data-guild-intro] #character-image,
+        #game-container[data-guild-intro] #character-image-next { left: 50% !important; bottom: 0 !important; top: auto !important; transform: translateX(-50%); }
+        /* 메뉴/상점 화면일 때 시나리오 레이어 숨김 */
+        #game-container.menu-visible #character-layer,
+        #game-container.menu-visible #ui-layer,
+        #game-container.menu-visible #bg-layer,
+        #game-container.menu-visible #episode-layer { display: none !important; pointer-events: none; }
+        /* 게임 전체 UI 화면: 보일 때 무조건 터치 허용 (경로 누락 방지) */
+        #main-menu-screen:not(.screen-hidden),
+        #menu-screen:not(.screen-hidden),
+        #episode-select-screen:not(.screen-hidden),
+        #dungeon-select-screen:not(.screen-hidden),
+        #shop-screen:not(.screen-hidden),
+        #gold-shop-screen:not(.screen-hidden),
+        #guild-screen:not(.screen-hidden),
+        #guild-boss-detail-screen:not(.screen-hidden) { touch-action: auto !important; }
+        /* 스크롤 영역 통일: 세로 스크롤 */
+        .char-list,
+        .episode-list,
+        #dungeon-list-container,
+        #episode-list-container,
+        .guild-report-body {
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* 스크롤 영역: 가로 스크롤 (길드 토벌 리스트) */
+        .guild-boss-list-wrap {
+            touch-action: pan-x !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* 상품/카드/버튼 터치 */
+        .shop-product-btn,
+        .guild-boss-card,
+        .episode-btn,
+        .char-card,
+        .dungeon-episode-btn { touch-action: manipulation; }
+        /* 길드 메인 화면: 시나리오 레이어 완전 제거 + 터치 허용 (모바일 터치/스크롤 정상화) */
+        #game-container.guild-main-visible #character-layer,
+        #game-container.guild-main-visible #ui-layer,
+        #game-container.guild-main-visible #bg-layer,
+        #game-container.guild-main-visible #episode-layer { display: none !important; pointer-events: none; }
+        #game-container.guild-main-visible .top-ui { visibility: hidden; pointer-events: none; }
+        #game-container.guild-main-visible #guild-screen { z-index: 9998; touch-action: auto; }
+        #gold-dungeon-guards.hidden { display: none !important; }
+        #gold-dungeon-guards .guard-img {
+            position: absolute; bottom: 300px; width: auto; height: auto; max-width: none; max-height: none;
+            object-fit: contain; object-position: bottom;
+        }
+        /* 좌우 끝에서 50px 여유, 중앙은 겹침 허용 */
+        #gold-dungeon-guards .guard-left { left: 50px; right: auto; transform-origin: bottom left; z-index: 1; }
+        #gold-dungeon-guards .guard-right { right: 50px; left: auto; transform-origin: bottom right; z-index: 2; }
+        @keyframes scene-item-glow-pulse {
+            0%, 100% { filter: drop-shadow(0 0 25px rgba(255, 200, 100, 0.9)) drop-shadow(0 0 50px rgba(255, 160, 0, 0.6)) drop-shadow(0 0 80px rgba(255, 120, 0, 0.4)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 220, 140, 1)) drop-shadow(0 0 80px rgba(255, 200, 100, 0.8)) drop-shadow(0 0 120px rgba(255, 160, 0, 0.5)); }
+        }
+        .goddess-glow-particle {
+            position: absolute; left: 50%; top: 50%; border-radius: 50%; pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 180, 80, 0.9) 0%, rgba(255, 120, 0, 0.5) 40%, transparent 70%);
+            box-shadow: 0 0 30px rgba(255, 160, 0, 0.8), 0 0 60px rgba(255, 100, 0, 0.4);
+            animation: goddess-particle-drift 14s ease-in-out infinite;
+            animation-fill-mode: both;
+        }
+        @keyframes goddess-particle-drift {
+            0% { opacity: 0; transform: translate(calc(-50% + var(--start-x)), calc(-50% + var(--start-y))) scale(var(--scale)); }
+            8% { opacity: 0.9; }
+            92% { opacity: 0.7; }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y))) scale(calc(var(--scale) * 0.4)); }
+        }
+        .shake-anim { animation: verticalShake 0.2s ease-in-out; }
+
+        /* 터치 파티클 */
+        .particle {
+            position: absolute; pointer-events: none; font-size: 64px; color: #ff4d4d;
+            filter: drop-shadow(0 0 8px rgba(255, 77, 77, 0.7));
+            z-index: 100; opacity: 0;
+            animation: particle-fly 1.2s cubic-bezier(0.2, 0.5, 0.3, 1) forwards;
+        }
+        @keyframes particle-fly {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+            100% { transform: translate(var(--tw-x), var(--tw-y)) scale(1.5) rotate(var(--tw-r)); opacity: 0; }
+        }
+
+        /* 하트 말풍선 */
+        #talk-bubble {
+            position: absolute; bottom: 1682px; left: 50%; transform: translateX(-50%) scale(0);
+            width: max-content;
+            background: #fff; color: #ff4d4d; padding: 24px 48px; border-radius: 20px; font-size: 48px;
+            font-family: var(--font-game); font-weight: 800;
+            white-space: pre;
+            z-index: 150; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); pointer-events: none;
+        }
+        #talk-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -10px; border-width: 10px; border-style: solid; border-color: white transparent transparent transparent; }
+        #talk-bubble.active { transform: translateX(-50%) scale(1); }
+
+        /* 대사창 (1080보다 좌우 넓게, 빈곳 없게). 모바일 폰트 확대 방지 */
+        #ui-layer {
+            position: absolute; bottom: 0; left: -40px; right: -40px; height: 672px;
+            padding: 70px 65px 70px 65px; box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.85); border-top: 2px solid var(--point-color);
+            cursor: pointer; z-index: 10; 
+            transition: transform 0.5s ease-in-out, opacity 0.3s ease-in-out; 
+            display: block;
+            backface-visibility: hidden;
+            -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+        }
+        #ui-layer.hidden { 
+            transform: translateY(100%); 
+            opacity: 0;
+            pointer-events: none;
+        }
+        #name-tag { position: absolute; bottom: 100%; left: 65px; background: var(--point-color); color: #000; padding: 16px 56px; font-family: var(--font-game); font-weight: 800; font-size: 36px; border-radius: 4px 4px 0 0; }
+        /* 1080×1920 기준 고정: 좌우 30px, 폰트 42px PC/모바일 동일 (브라우저 자동 확대 방지) */
+        #dialogue-text { color: #fff; font-size: 42px !important; line-height: 1.7; white-space: pre-wrap; max-height: 420px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-left: 30px !important; padding-right: 30px !important; box-sizing: border-box; scrollbar-width: none; -ms-overflow-style: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; font-family: var(--font-game); }
+        #dialogue-text::-webkit-scrollbar { display: none; }
+        #dialogue-next-indicator { position: absolute; right: 65px; bottom: 40px; font-size: 24px; color: var(--point-color); opacity: 0.9; pointer-events: none; transition: opacity 0.2s; }
+        /* 1080×1920 고정: 대사창/여백 PC·모바일 동일 (미디어쿼리로 바꾸지 않음) */
+        @media (max-width: 480px), (max-height: 720px) {
+            #ui-layer { padding: 50px 65px 50px 65px; height: 672px; }
+            #name-tag { font-size: 36px; padding: 12px 44px; }
+            #dialogue-text { font-size: 42px !important; line-height: 1.65; max-height: 420px; }
+            #dialogue-next-indicator { right: 65px; bottom: 28px; font-size: 24px; }
+            #ending-text-display { font-size: 42px; padding: 36px 28px; }
+        }
+        #dialogue-next-indicator.hidden { display: none !important; }
+
+        #white-out { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 2s; }
+        #white-out.black-out { background: #000; }
+        /* 던전 진입: 타이틀→메인처럼 대사창 내려감 >> 배경 부드럽게 확대+페이드 >> 블랙 >> 던전리스트 */
+        #game-container.dungeon-intro-transition #ui-layer {
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+        }
+        @keyframes dungeon-intro-zoom-fade {
+            0% { transform: scale(1) translateY(0); opacity: 1; }
+            20% { transform: scale(1.08) translateY(-1.5%); opacity: 1; }
+            40% { transform: scale(1.18) translateY(1%); opacity: 1; }
+            55% { transform: scale(1.28) translateY(-0.8%); opacity: 1; }
+            70% { transform: scale(1.35) translateY(0.4%); opacity: 1; }
+            85% { transform: scale(1.4) translateY(0); opacity: 1; }
+            100% { transform: scale(1.4) translateY(0); opacity: 0; }
+        }
+        #game-container.dungeon-intro-zoom #bg-layer,
+        #game-container.dungeon-intro-zoom #character-layer {
+            animation: dungeon-intro-zoom-fade 1.2s ease-out forwards;
+            transform-origin: center center;
+        }
+        #ending-overlay {
+            position: absolute; inset: 0; z-index: 8500;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            cursor: pointer; transition: opacity 0.5s ease;
+        }
+        #ending-overlay.hidden { display: none !important; }
+        #ending-text-display {
+            max-width: 90%; padding: 48px;
+            font-size: 42px; line-height: 1.8; text-align: center;
+            color: #fff; white-space: pre-wrap; word-break: keep-all;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            font-family: var(--font-game); font-weight: 800;
+        }
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .modal-content {
+          background: #111;
+          border: 2px solid #d4af37;
+          border-radius: 8px;
+          padding: 48px;
+          text-align: center;
+          color: #fff;
+          width: 864px;
+          font-family: var(--font-game);
+        }
+        #modal-title {
+          font-size: 48px;
+          color: var(--point-color);
+          margin-bottom: 32px;
+          font-weight: 800;
+        }
+        #modal-body {
+          white-space: pre-wrap;
+          line-height: 1.6;
+          margin-bottom: 32px;
+          font-size: 40px;
+          font-family: var(--font-game);
+        }
+        .show-modal { display: flex !important; }
+        .modal-overlay.show-modal,
+        .modal-overlay.show-modal .modal-content { touch-action: auto; }
+
+        * { -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
+        /* 모바일 터치: 300ms 지연 제거, :active 피드백 활성화 */
+        .char-card, .episode-btn, .episode-back-btn, .top-ui button, .modal-btn,
+        .modal-btn--single, .modal-btn--pair {
+            touch-action: manipulation;
+        }
+/* 선택지 모달 질문 텍스트 가독성 */
+#modal-body > div {
+  font-size: 40px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+/* 모달 / 선택지 공통 버튼 스타일 (나가기 모달과 완전 동일) */
+.modal-btn {
+  flex: 1;
+  min-width: 180px;
+  min-height: 130px;
+  padding: 26px 22px;
+  font-size: 40px;
+  font-weight: 800;
+  font-family: var(--font-game);
+  line-height: 1.25;
+  border-radius: 14px;
+  border: 1px solid rgba(204, 153, 0, 0.55);
+  background: rgba(15, 15, 15, 0.92);
+  color: #e9d28a;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+/* 단일 확인 버튼: width 100%로 풀폭 */
+.modal-btn--single {
+  width: 100%;
+  min-height: 130px;
+  font-size: 40px;
+}
+
+/* 확인/취소 2버튼: flex로 나란히 */
+.modal-btn--pair {
+  width: auto;
+  flex: 1;
+}
+
+/* 2버튼 컨테이너 (나가기 모달 .quit-confirm-btns와 동일) */
+.modal-btns-wrap {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* 포인트 컬러 버튼(기본 확인 등) - 나가기 모달 확인 버튼과 동일 */
+.modal-btn--primary {
+  background: #d4af37;
+  color: #000;
+  border: none;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.modal-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(204, 153, 0, 0.9);
+  background: rgba(25, 25, 25, 0.92);
+}
+.modal-btn--primary:hover {
+  filter: brightness(1.1);
+}
+
+.modal-btn:active {
+  transform: translateY(0px) scale(0.96);
+}
+.modal-btn--primary:active {
+  filter: brightness(0.9);
+}
+
+
+/* ===== Event intro system: background layer + UI show/hide ===== */
+#bg-layer {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 1;
+    transition: opacity 220ms ease;
+    z-index: 0;
+}
+
+/* Keep character layer above background */
+#character-layer { z-index: 1; background: transparent; }
+
+/* Dialogue UI animation states (engine controls these classes) */
+#ui-layer {
+    display: block; /* 엔진/스크립트에서 필요 시 show/hide는 클래스로 제어 */
+    backface-visibility: hidden;
+}
+#ui-layer.ui-hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.5s ease-in-out, opacity 0.25s ease-in-out;
+}
+#ui-layer.ui-shown {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+    transition: transform 0.5s ease-in-out, opacity 0.25s ease-in-out;
+}
+
+        /* Character position (optional) */
+        #floating-wrapper[data-pos="left"] { justify-items: start; padding-left: 65px; padding-right: 0; }
+        #floating-wrapper[data-pos="center"] { justify-items: center; padding-left: 0; padding-right: 0; }
+        #floating-wrapper[data-pos="right"] { justify-items: end; padding-right: 65px; padding-left: 0; }
+        /* mon 이미지: shake 시에도 translateX(-50%) 유지 */
+        #floating-wrapper #character-image[src*="mon_"].shake-anim,
+        #floating-wrapper #character-image-next[src*="mon_"].shake-anim { animation: verticalShakeMon 0.2s ease-in-out; }
+
+/* ===== 에피소드 타이틀 연출 ===== */
+#episode-layer {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  transition: opacity 0.6s ease;
+}
+
+#episode-layer.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#episode-title {
+  color: #e9d28a;
+  font-size: 72px;
+  font-weight: 800;
+  font-family: var(--font-game);
+  letter-spacing: 4px;
+  text-align: center;
+  white-space: pre-line;
+  opacity: 0;
+  transform: translateY(19px);
+  transition: opacity 0.5s ease 0.25s, transform 0.5s ease 0.25s;
+}
+
+#episode-layer.show #episode-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#episode-layer.memory-prologue #episode-title {
+  color: #d4af37;
+}
+
+/* ===== 배틀 오버레이 (퍼즐 RPG iframe) ===== */
+#battle-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw; height: 100dvh; height: 100vh;
+  min-height: -webkit-fill-available;
+  background: #000;
+  z-index: 99999;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#fade-out-overlay { position: fixed; inset: 0; min-height: -webkit-fill-available; background: #000; z-index: 100000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+#fade-out-overlay.active { opacity: 1; }
+#battle-frame {
+  border: none;
+  flex: 0 0 auto;
+}
+
+/* 골드 던전 나가기 확인 모달 (상점 모달과 동일 크기, 1080x1920 기준 스케일) */
+.quit-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 100001;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: calc(20px * var(--quit-scale, 1));
+  box-sizing: border-box;
+  font-family: var(--font-game);
+}
+.quit-confirm-overlay.hidden { display: none !important; }
+.quit-confirm-box {
+  background: #111;
+  border: 2px solid #d4af37;
+  border-radius: 8px;
+  padding: calc(48px * var(--quit-scale, 1));
+  text-align: center;
+  color: #fff;
+  font-family: var(--font-game);
+  width: min(864px, calc(864px * var(--quit-scale, 1)));
+  max-width: calc(100vw - 40px);
+  box-sizing: border-box;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+.quit-confirm-text { font-size: calc(40px * var(--quit-scale, 1)); line-height: 1.6; margin-bottom: calc(32px * var(--quit-scale, 1)); font-family: var(--font-game); font-weight: 800; }
+.quit-confirm-btns { display: flex; gap: calc(16px * var(--quit-scale, 1)); justify-content: center; flex-wrap: wrap; }
+.quit-confirm-btn {
+  flex: 1;
+  min-width: calc(180px * var(--quit-scale, 1));
+  min-height: calc(130px * var(--quit-scale, 1));
+  padding: calc(26px * var(--quit-scale, 1)) calc(22px * var(--quit-scale, 1));
+  font-size: calc(40px * var(--quit-scale, 1));
+  font-weight: 800;
+  font-family: var(--font-game);
+  border-radius: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  border: 1px solid rgba(204, 153, 0, 0.55);
+  background: rgba(15, 15, 15, 0.92);
+  color: #e9d28a;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.quit-confirm-btn:hover { transform: translateY(-2px); border-color: rgba(204, 153, 0, 0.9); background: rgba(25, 25, 25, 0.92); }
+.quit-confirm-btn.ok { background: #d4af37; color: #000; border: none; box-shadow: 0 12px 26px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08); }
+.quit-confirm-btn.ok:hover { filter: brightness(1.1); }
+
+/* 모바일(안드로이드) 최적화 */
+@media (hover: none) and (pointer: coarse) {
+    .episode-back-btn, .dungeon-intro-btn, .close-btn, #touch-mode-btn {
+        min-height: 48px;
+        min-width: 48px;
+        touch-action: manipulation;
+    }
+    .episode-list, .char-list, .main-menu-list {
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}

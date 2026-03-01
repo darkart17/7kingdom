@@ -1,0 +1,89 @@
+export const goldDungeonFirstIntro = [
+  {
+    "type": "bg",
+    "bg": "assets/images/dungeon/bg_gold_dungeon_ent.jpg",
+    "transition": "fade"
+  },
+  {
+    "type": "narration",
+    "text": "왕도 외곽에 자리한 거대한 암벽. 그곳에 입을 벌리고 있는 거대한 동굴이 이른바 '골드 던전'이라 불리는 장소다."
+  },
+  {
+    "type": "narration",
+    "text": "입구에는 은빛 갑옷을 입고 장창을 든 두 명의 병사가 굳건히 서 있었고, 그 사이로 붉은 망토를 두른 경비대장이 걸어 나왔다."
+  },
+  {
+    "type": "actor",
+    "action": "show",
+    "image": "guard_captain_01", // 경비대장 이미지
+    "pos": "center"
+  },
+  {
+    "type": "narration",
+    "text": "남자들이 모두 마왕 토벌전으로 차출된 베리디안 왕국.\n하지만 이 여성 경비대장과 병사들의 날 선 눈빛은, 왕국의 치안이 왜 이토록 굳건히 유지되는지 증명하고 있었다."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "정지. 이곳은 왕국이 직접 관리하는 통제 구역이다.\n소속과 목적을 밝혀라."
+  },
+  {
+    "type": "narration",
+    "text": "나는 다가가 모험가 길드 'STAY'에서 발급받은 던전 출입 승인증을 내밀었다."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "길드 소속 모험가... 확인하지."
+  },
+  {
+    "type": "narration",
+    "text": "경비대장이 서류와 마법 각인을 대조하는 동안, 그녀는 특유의 위압적이면서도 차분한 목소리로 입을 열었다."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "소수 인원으로 왔군. 현명한 선택이다."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "이 던전의 주인인 '골드 드래곤'은 대규모 인원이 진입할 경우, 자신의 영역에 대한 침범으로 간주해 폭주할 위험이 크거든."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "그래서 왕국 차원에서 군대나 대규모 파티의 출입을 엄격히 통제하고, 길드의 승인을 받은 정예 모험가만 들여보내고 있지."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "신원 및 승인증 확인되었다. 출입을 허가한다."
+  },
+  {
+    "type": "narration",
+    "text": "경비대장이 승인증을 돌려주며, 차갑고 사무적인 눈빛으로 덧붙였다."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "명심해라. 내부에서 일어나는 모든 사고에 대해 왕국은 책임지지 않는다. 생사는 온전히 네 몫이야."
+  },
+  {
+    "type": "dialogue",
+    "speaker": "경비대장",
+    "text": "또한, 지금 이 시간부로 진입 후 2일(48시간) 이내에 귀환하지 않을 경우, 규정에 따라 '사망자'로 자동 처리된다.\n무운을 빈다."
+  },
+  {
+    "type": "actor",
+    "action": "hide"
+  },
+  {
+    "type": "narration",
+    "text": "서늘한 경고를 뒤로한 채, 나는 황금빛 광물이 희미하게 빛나는 던전의 어둠 속으로 발걸음을 옮겼다."
+  },
+  {
+    "type": "system",
+    "text": "[ 시스템 : 골드 던전에 진입합니다. ]"
+  }
+];
